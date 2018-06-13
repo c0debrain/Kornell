@@ -1,0 +1,164 @@
+ALTER TABLE ActomEntered
+  DEFAULT CHARACTER SET utf8mb4;
+
+ALTER TABLE ActomEntries
+  DEFAULT CHARACTER SET utf8mb4,
+  MODIFY actomKey VARCHAR(127) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  MODIFY entryKey VARCHAR(127) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  MODIFY entryValue TEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+ALTER TABLE ActomEntryChangedEvent
+  DEFAULT CHARACTER SET utf8mb4,
+  MODIFY actomKey VARCHAR(127) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  MODIFY entryKey VARCHAR(127) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  MODIFY entryValue VARCHAR(127) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+ALTER TABLE AttendanceSheetSigned
+  DEFAULT CHARACTER SET utf8mb4;
+
+ALTER TABLE CertificateDetails
+  DEFAULT CHARACTER SET utf8mb4,
+  MODIFY bgImage TEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL;
+
+ALTER TABLE ChatThread
+  DEFAULT CHARACTER SET utf8mb4;
+
+ALTER TABLE ChatThreadMessage
+  DEFAULT CHARACTER SET utf8mb4,
+  MODIFY message LONGTEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+ALTER TABLE ChatThreadParticipant
+  DEFAULT CHARACTER SET utf8mb4;
+
+ALTER TABLE ContentRepository
+  DEFAULT CHARACTER SET utf8mb4,
+  MODIFY bucketName VARCHAR(1024) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  MODIFY prefix VARCHAR(1024) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  MODIFY path VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+ALTER TABLE Course
+  DEFAULT CHARACTER SET utf8mb4,
+  MODIFY code VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  MODIFY name VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  MODIFY description LONGTEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  MODIFY infoJson LONGTEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  MODIFY thumbUrl TEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+ALTER TABLE CourseClass
+  DEFAULT CHARACTER SET utf8mb4,
+  MODIFY name VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  MODIFY ecommerceIdentifier VARCHAR(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  MODIFY thumbUrl TEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+ALTER TABLE CourseClassStateChanged
+  DEFAULT CHARACTER SET utf8mb4;
+
+ALTER TABLE CourseDetailsHint
+  DEFAULT CHARACTER SET utf8mb4,
+  MODIFY title VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  MODIFY text TEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL;
+
+ALTER TABLE CourseDetailsLibrary
+  DEFAULT CHARACTER SET utf8mb4,
+  MODIFY title VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  MODIFY description TEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  MODIFY path VARCHAR(512) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL;
+
+ALTER TABLE CourseDetailsSection
+  DEFAULT CHARACTER SET utf8mb4,
+  MODIFY title VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  MODIFY text TEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+ALTER TABLE CourseVersion
+  DEFAULT CHARACTER SET utf8mb4,
+  MODIFY name VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  MODIFY distributionPrefix VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  MODIFY label VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  MODIFY thumbUrl TEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  MODIFY classroomJson MEDIUMTEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  MODIFY classroomJsonPublished MEDIUMTEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+ALTER TABLE EmailTemplate
+  DEFAULT CHARACTER SET utf8mb4,
+  MODIFY title VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  MODIFY template TEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL;
+
+ALTER TABLE Enrollment
+  DEFAULT CHARACTER SET utf8mb4,
+  MODIFY notes LONGTEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+ALTER TABLE EnrollmentStateChanged
+  DEFAULT CHARACTER SET utf8mb4,
+  MODIFY notes LONGTEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+ALTER TABLE EnrollmentTransferred
+  DEFAULT CHARACTER SET utf8mb4;
+
+ALTER TABLE EntityChanged
+  DEFAULT CHARACTER SET utf8mb4,
+  MODIFY fromValue MEDIUMTEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  MODIFY toValue MEDIUMTEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+ALTER TABLE Institution
+  DEFAULT CHARACTER SET utf8mb4,
+  MODIFY name VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  MODIFY terms MEDIUMTEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  MODIFY baseURL VARCHAR(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'FIXME-PLS',
+  MODIFY fullName VARCHAR(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  MODIFY institutionSupportEmail VARCHAR(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+ALTER TABLE InstitutionEmailWhitelist
+  DEFAULT CHARACTER SET utf8mb4,
+  MODIFY domain CHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL;
+
+ALTER TABLE InstitutionHostName
+  DEFAULT CHARACTER SET utf8mb4,
+  MODIFY hostName VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL;
+
+ALTER TABLE InstitutionRegistrationPrefix
+  DEFAULT CHARACTER SET utf8mb4,
+  MODIFY name CHAR(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL;
+
+ALTER TABLE Password
+  DEFAULT CHARACTER SET utf8mb4,
+  MODIFY username CHAR(63) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+ALTER TABLE Person
+  DEFAULT CHARACTER SET utf8mb4,
+  MODIFY fullName VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  MODIFY lastPlaceVisited VARCHAR(2083) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  MODIFY email VARCHAR(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  MODIFY company VARCHAR(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  MODIFY title VARCHAR(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  MODIFY confirmation VARCHAR(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  MODIFY state VARCHAR(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  MODIFY city VARCHAR(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  MODIFY addressLine1 VARCHAR(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  MODIFY addressLine2 VARCHAR(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  MODIFY postalCode VARCHAR(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  MODIFY cpf VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+ALTER TABLE PostbackConfig
+  DEFAULT CHARACTER SET utf8mb4,
+  MODIFY contents TEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL;
+
+ALTER TABLE ProgressMilestone
+  DEFAULT CHARACTER SET utf8mb4,
+  MODIFY actomKey VARCHAR(1024) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  MODIFY entryValue VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL;
+
+ALTER TABLE Role
+  DEFAULT CHARACTER SET utf8mb4;
+
+ALTER TABLE Token
+  DEFAULT CHARACTER SET utf8mb4;
+
+ALTER TABLE Track
+  DEFAULT CHARACTER SET utf8mb4,
+  MODIFY name VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL;
+
+ALTER TABLE TrackEnrollment
+  DEFAULT CHARACTER SET utf8mb4;
+
+ALTER TABLE TrackItem
+  DEFAULT CHARACTER SET utf8mb4;
