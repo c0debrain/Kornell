@@ -243,7 +243,7 @@ public class GenericMessageView extends Composite implements MessageView, ShowCh
             });
             String selectedChatThreadUUID = presenter.getThreadSelection() == null ? null
                     : presenter.getThreadSelection().getChatThreadUUID();
-            if (unreadChatThreadTO.getChatThreadUUID().equals(selectedChatThreadUUID)) {
+            if (unreadChatThreadTO.getChatThreadUUID() != null && unreadChatThreadTO.getChatThreadUUID().equals(selectedChatThreadUUID)) {
                 label.addStyleName("selected");
                 setLabelContent(unreadChatThreadTO, label, true, currentUserFullName);
             } else {
