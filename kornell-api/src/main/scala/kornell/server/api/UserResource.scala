@@ -1,5 +1,7 @@
 package kornell.server.api
 
+import java.net.URL
+
 import scala.collection.JavaConverters.asScalaBufferConverter
 import scala.collection.JavaConverters.setAsJavaSetConverter
 import scala.collection.immutable.Set
@@ -63,11 +65,16 @@ class UserResource(private val authRepo: AuthRepo) {
     @QueryParam("hostName") hostName: String) = {
     val userHello = newUserHelloTO
 
-    val institution = {
+    var institution = {
       if (name != null) InstitutionsRepo.getByName(name)
       else if (hostName != null) InstitutionsRepo.getByHostName(hostName)
       else None
     }
+    if (institution.isEmpty && req.getHeader("Referer") != null) {
+      val refererUrl = new URL(req.getHeader("Referer"))
+      institution = InstitutionsRepo.getByHostName(refererUrl.getHost)
+    }
+
     if (!institution.isDefined) {
       if (StringUtils.isSome(name) || StringUtils.isSome(hostName)) {
         throw new EntityNotFoundException("unknownInstitution");
