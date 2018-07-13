@@ -469,6 +469,7 @@ app.controller('WizardController', [
     $scope.removeQuestion = function(index) {
       $scope.selectedNode.questions.splice(index, 1);
       $scope.selectQuestion(0);
+      $scope.limitQuestionsChanged();
     };
 
     $scope.newOption = function(selectedQuestion) {
@@ -599,6 +600,24 @@ app.controller('WizardController', [
       $scope.selectedQuestion = $scope.selectedNode.questions[index];
     };
 
+    $scope.expectedGradeChanged = function() {
+      $timeout(function(){
+        if($scope.selectedNode.expectedGrade === undefined || $scope.selectedNode.expectedGrade < 0 || $scope.selectedNode.expectedGrade > 100) {
+          $scope.selectedNode.expectedGrade = null;
+        }
+      },1000);
+    };
+
+    $scope.limitQuestionsChanged = function() {
+      $timeout(function(){
+        if(!$scope.selectedNode.shuffleQuestions){
+          $scope.selectedNode.limitQuestions = null;
+        } else if($scope.selectedNode.limitQuestions === undefined || $scope.selectedNode.limitQuestions < 1 || $scope.selectedNode.limitQuestions > $scope.selectedNode.questions.length) {
+          $scope.selectedNode.limitQuestions = $scope.selectedNode.questions.length;
+        }
+      },1000);
+    };
+
     $scope.toggleOptions = function() {
       angular.forEach($scope.selectedNode.questions, function(question){
         $scope.toggleOption(question);
@@ -659,7 +678,7 @@ app.controller('WizardController', [
 
     $scope.calculateLimitToDots = function(){
       if($window.innerWidth > 1800) {
-        $scope.limitToDots = 45;
+        $scope.limitToDots = 40;
       } else if($window.innerWidth > 1600) {
         $scope.limitToDots = 35;
       } else if($window.innerWidth > 1400) {

@@ -158,8 +158,14 @@ app.controller('FinalExamLectureController', [
             $scope.answerCorrect = null;
         };
         
-        $scope.shuffleQuestions = function(array) {
+        $scope.shuffleQuestions = function() {
             $scope.lecture.questions = knlUtils.shuffleArray($scope.lecture.questions);
+            if($scope.lecture.limitQuestions){
+                var questionsToRemove = $scope.lecture.questions.length - $scope.lecture.limitQuestions;
+                for(var i = 0; i < questionsToRemove; i++){
+                    $scope.lecture.questions.pop();
+                }
+            }
             for (var i = 0; i < $scope.lecture.questions.length; i++){
                 var question = $scope.lecture.questions[i];
                 question.options = knlUtils.shuffleArray(question.options);

@@ -25,6 +25,8 @@ http://www.khanacademy.org
 http://www.udemy.com
 
 http://www.udacity.com
+
+
 Check our [wiki](https://github.com/Craftware/Kornell/wiki) and get started!
 
 This project is named after [Dr. Nate Kornell](http://sites.williams.edu/nk2/)  
