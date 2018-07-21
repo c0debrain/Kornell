@@ -10,6 +10,7 @@ import kornell.core.to.EnrollmentLaunchTO
 import kornell.server.ep.EnrollmentSEP
 import kornell.server.jdbc.PreparedStmt
 import kornell.server.jdbc.SQL._
+import kornell.server.jdbc.repository.CourseClassesRepo.byEnrollment
 import kornell.server.jdbc.repository.{AuthRepo, CourseClassesRepo, CourseRepo, CourseVersionRepo, EnrollmentRepo, PersonRepo}
 import kornell.server.repository.{ContentRepository, Entities, TOs}
 import kornell.server.scorm12.SCORM12
@@ -207,7 +208,10 @@ class EnrollmentResource(uuid: String) {
   def addDaysToExpiryDate(@PathParam("numberOfDays") numberOfDays: String): Response = {
     EnrollmentRepo(uuid).addDaysToExpiryDate(numberOfDays)
     Response.noContent.build
-  }
+  }.requiring(isPlatformAdmin, AccessDeniedErr())
+    .or(isInstitutionAdmin, AccessDeniedErr())
+    .or(isCourseClassAdmin(CourseClassesRepo.byEnrollment(uuid).get.getUUID), AccessDeniedErr())
+    .get
 
   @GET
   @Produces(Array(EnrollmentsEntries.TYPE))
