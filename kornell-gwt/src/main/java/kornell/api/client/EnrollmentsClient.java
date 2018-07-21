@@ -23,10 +23,6 @@ public class EnrollmentsClient extends RESTClient {
                 .go(cb);
     }
 
-    public void updateEnrollment(Enrollment enrollment, Callback<Enrollment> cb) {
-        PUT("/enrollments/" + enrollment.getUUID()).withContentType(Enrollment.TYPE).withEntityBody(enrollment).go(cb);
-    }
-
     public void createEnrollment(Enrollment enrollment, Callback<Enrollment> cb) {
         POST("/enrollments").withContentType(Enrollment.TYPE).withEntityBody(enrollment).go(cb);
     }

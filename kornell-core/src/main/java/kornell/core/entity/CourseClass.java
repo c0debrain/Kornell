@@ -72,4 +72,7 @@ public interface CourseClass extends LearningEntity {
 
     Boolean isSandbox();
     void setSandbox(Boolean sandbox);
+
+    Integer getEnrollmentExpiryDays();
+    void setEnrollmentExpiryDays(Integer enrollmentExpiryDays);
 }

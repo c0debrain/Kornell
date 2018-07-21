@@ -102,7 +102,7 @@ public class GenericCourseClassConfigView extends Composite {
     private KornellFormFieldWrapper course, courseVersion, name, publicClass, approveEnrollmentsAutomatically,
     requiredScore, registrationType, institutionRegistrationPrefix, maxEnrollments, overrideEnrollments,
     invisible, allowBatchCancellation, courseClassChatEnabled, chatDockEnabled, allowCertification,
-    tutorChatEnabled, ecommerceIdentifier;
+    tutorChatEnabled, ecommerceIdentifier, enrollmentExpiryDays;
     private List<KornellFormFieldWrapper> fields;
     private String modalMode;
     private ListBox institutionRegistrationPrefixes;
@@ -164,20 +164,6 @@ public class GenericCourseClassConfigView extends Composite {
         fields.add(name);
         profileFields.add(name);
 
-        String maxEnrollmentsStr = courseClass.getMaxEnrollments() == null ? ""
-                : courseClass.getMaxEnrollments().toString();
-        maxEnrollments = new KornellFormFieldWrapper("Quantidade de Matrículas",
-                formHelper.createTextBoxFormField(maxEnrollmentsStr), isInstitutionAdmin);
-        fields.add(maxEnrollments);
-        profileFields.add(maxEnrollments);
-
-        if (session.isPlatformAdmin() && !isCreationMode) {
-            ecommerceIdentifier = new KornellFormFieldWrapper("E-commerce ID",
-                    formHelper.createTextBoxFormField(courseClass.getEcommerceIdentifier()), false);
-            fields.add(ecommerceIdentifier);
-            profileFields.add(ecommerceIdentifier);
-        }
-
         final ListBox registrationTypes = new ListBox();
         registrationTypes.addItem("Email", RegistrationType.email.toString());
         registrationTypes.addItem("CPF", RegistrationType.cpf.toString());
@@ -191,6 +177,21 @@ public class GenericCourseClassConfigView extends Composite {
                 isInstitutionAdmin);
         fields.add(registrationType);
         profileFields.add(registrationType);
+
+        String maxEnrollmentsStr = courseClass.getMaxEnrollments() == null ? ""
+                : courseClass.getMaxEnrollments().toString();
+        maxEnrollments = new KornellFormFieldWrapper("Quantidade de Matrículas",
+                formHelper.createTextBoxFormField(maxEnrollmentsStr), isInstitutionAdmin);
+        fields.add(maxEnrollments);
+        profileFields.add(maxEnrollments);
+
+        String enrollmentExpiryDaysStr = courseClass.getEnrollmentExpiryDays() == null ? "0"
+                : courseClass.getEnrollmentExpiryDays().toString();
+        enrollmentExpiryDays = new KornellFormFieldWrapper("Limite de dias para conclusão",
+                formHelper.createTextBoxFormField(enrollmentExpiryDaysStr), isInstitutionAdmin, null,
+                "Se o valor for deixado em branco ou for zero, os participantes não terão prazo limite para concluir o curso.");
+        fields.add(enrollmentExpiryDays);
+        profileFields.add(enrollmentExpiryDays);
 
         if (session.getInstitution().isAllowRegistrationByUsername()) {
             institutionRegistrationPrefixes = new ListBox();
@@ -381,6 +382,13 @@ public class GenericCourseClassConfigView extends Composite {
             ((CheckBox) chatDockEnabled.getFieldWidget()).setEnabled(isCourseClassChatEnabled);
         }
 
+        if (session.isPlatformAdmin() && !isCreationMode) {
+            ecommerceIdentifier = new KornellFormFieldWrapper("E-commerce ID",
+                    formHelper.createTextBoxFormField(courseClass.getEcommerceIdentifier()), false);
+            fields.add(ecommerceIdentifier);
+            profileFields.add(ecommerceIdentifier);
+        }
+
         profileFields.add(formHelper.getImageSeparator());
     }
 
@@ -506,6 +514,12 @@ public class GenericCourseClassConfigView extends Composite {
             maxEnrollments.setError("Menor que o número atual de matrículas.");
         }
 
+        if (!formHelper.isLengthValid(enrollmentExpiryDays.getFieldPersistText(), 1)) {
+            enrollmentExpiryDays.setError("Insira o limite de dias para conclusão.");
+        } else if (!formHelper.isValidNumber(enrollmentExpiryDays.getFieldPersistText())) {
+            enrollmentExpiryDays.setError("Número inteiro inválido.");
+        }
+
         return !formHelper.checkErrors(fields);
     }
 
@@ -540,6 +554,7 @@ public class GenericCourseClassConfigView extends Composite {
         courseClass.setTutorChatEnabled(
                 tutorChatEnabled != null ? tutorChatEnabled.getFieldPersistText().equals("true") : false);
         courseClass.setRegistrationType(RegistrationType.valueOf(registrationType.getFieldPersistText()));
+        courseClass.setEnrollmentExpiryDays(new Integer(enrollmentExpiryDays.getFieldPersistText()));
         if (allowPrefixEdit) {
             courseClass.setInstitutionRegistrationPrefixUUID(institutionRegistrationPrefix.getFieldPersistText());
         }

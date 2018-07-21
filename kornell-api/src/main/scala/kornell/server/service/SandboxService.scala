@@ -47,7 +47,8 @@ object SandboxService {
           startDate = null,
           ecommerceIdentifier = null,
           thumbUrl = null,
-          sandbox = true))
+          sandbox = true,
+          enrollmentExpiryDays = 0))
         enrollAdmins(courseClass.getUUID, institution.getUUID)
       }
     } else {

@@ -187,6 +187,9 @@ public interface KornellConstants extends ConstantsWithLookup {
     @DefaultStringValue("Your registration was canceled by the institution.<br><br> The material in this class is inaccessible.<br>")
     String cancelledEnrollment();
 
+    @DefaultStringValue("Your registration has expired. Get in touch with support if you with to extend it.<br><br> The material in this class is inaccessible.<br>")
+    String expiredEnrollment();
+
     @DefaultStringValue("Ainda não existe conteúdo publicado para esta classe.<br><br> Entre em contato com o suporte clicando na interrogação no menu.<br>")
     String noPublishedContentForClassroom();
 
@@ -539,6 +542,12 @@ public interface KornellConstants extends ConstantsWithLookup {
      */
     @DefaultStringValue("(CANCELLED)")
     String cancelledClassLabel();
+
+    @DefaultStringValue("(Expired on:")
+    String expiredClassLabel();
+
+    @DefaultStringValue("(Expires on:")
+    String expiresClassLabel();
 
     @DefaultStringValue("Available")
     String availableClassLabel();

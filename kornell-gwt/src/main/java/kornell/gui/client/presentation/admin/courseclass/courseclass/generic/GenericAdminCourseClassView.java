@@ -173,6 +173,17 @@ public class GenericAdminCourseClassView extends Composite implements AdminCours
     com.google.gwt.user.client.ui.Button btnModalTransferCancel;
 
     @UiField
+    Modal extendExpiryModal;
+    @UiField
+    Label txtModalExtendExpiry1;
+    @UiField
+    TextBox expiryDaysTextBox;
+    @UiField
+    com.google.gwt.user.client.ui.Button btnModalExtendExpiryOK;
+    @UiField
+    com.google.gwt.user.client.ui.Button btnModalExtendExpiryCancel;
+
+    @UiField
     Modal batchCancelModal;
     @UiField
     com.google.gwt.user.client.ui.Button btnBatchCancelModalOK;
@@ -229,6 +240,9 @@ public class GenericAdminCourseClassView extends Composite implements AdminCours
 
         btnModalTransferOK.setText("OK".toUpperCase());
         btnModalTransferCancel.setText("Cancelar".toUpperCase());
+
+        btnModalExtendExpiryOK.setText("OK".toUpperCase());
+        btnModalExtendExpiryCancel.setText("Cancelar".toUpperCase());
 
         enrollmentsTab.addClickHandler(new ClickHandler() {
             @Override
@@ -378,6 +392,7 @@ public class GenericAdminCourseClassView extends Composite implements AdminCours
     }
 
     private void initTable() {
+        boolean hasExpiry = courseClassTO.getCourseClass().getEnrollmentExpiryDays() != null && courseClassTO.getCourseClass().getEnrollmentExpiryDays() > 0;
 
         table = new KornellTable<EnrollmentTO>(presenter, "");
 
@@ -389,7 +404,7 @@ public class GenericAdminCourseClassView extends Composite implements AdminCours
         };
         nameColumn.setSortable(true);
         nameColumn.setDataStoreName("p.fullName");
-        table.setColumnWidth(nameColumn, "22%");
+        table.setColumnWidth(nameColumn, hasExpiry ? "18%": "23%");
         table.addColumn(nameColumn, "Nome");
 
         TextColumn<EnrollmentTO> usernameColumn = new TextColumn<EnrollmentTO>() {
@@ -400,7 +415,7 @@ public class GenericAdminCourseClassView extends Composite implements AdminCours
         };
         usernameColumn.setSortable(true);
         usernameColumn.setDataStoreName("pw.username");
-        table.setColumnWidth(usernameColumn, "20%");
+        table.setColumnWidth(usernameColumn, hasExpiry ? "17%": "21%");
         table.addColumn(usernameColumn, "Usuário");
 
         TextColumn<EnrollmentTO> stateColumn = new TextColumn<EnrollmentTO>() {
@@ -451,7 +466,7 @@ public class GenericAdminCourseClassView extends Composite implements AdminCours
         enrolledOnColumn.setSortable(true);
         enrolledOnColumn.setDefaultSortAscending(false);
         enrolledOnColumn.setDataStoreName("e.enrolledOn");
-        table.setColumnWidth(enrolledOnColumn, "10%");
+        table.setColumnWidth(enrolledOnColumn, "9%");
         table.addColumn(enrolledOnColumn, "Data da Matrícula");
 
         TextColumn<EnrollmentTO> lastAccessColumn = new TextColumn<EnrollmentTO>() {
@@ -475,12 +490,28 @@ public class GenericAdminCourseClassView extends Composite implements AdminCours
         lastAccessColumn.setSortable(true);
         lastAccessColumn.setDefaultSortAscending(false);
         lastAccessColumn.setDataStoreName("e.lastProgressUpdate");
-        table.setColumnWidth(lastAccessColumn, "10%");
+        table.setColumnWidth(lastAccessColumn, "9%");
         table.addColumn(lastAccessColumn, "Último acesso");
 
+        if(hasExpiry){
+            TextColumn<EnrollmentTO> expiryDaysColumn = new TextColumn<EnrollmentTO>() {
+                @Override
+                public String getValue(EnrollmentTO enrollmentTO) {
+                    return formHelper.dateToString(enrollmentTO.getEnrollment().getEndDate());
+                }
+            };
+            expiryDaysColumn.setSortable(true);
+            expiryDaysColumn.setDefaultSortAscending(false);
+            expiryDaysColumn.setDataStoreName("e.endDate");
+            table.setColumnWidth(expiryDaysColumn, "9%");
+            table.addColumn(expiryDaysColumn, "Data de Expiração");
+        }
+
         List<HasCell<EnrollmentTO, ?>> cells = new LinkedList<HasCell<EnrollmentTO, ?>>();
-        cells.add(new EnrollmentActionsHasCell("Reenviar Email de Matrícula",
-                getStateChangeDelegate(EnrollmentState.enrolled)));
+        cells.add(new EnrollmentActionsHasCell("Reenviar Email de Matrícula", getStateChangeDelegate(EnrollmentState.enrolled)));
+        if(hasExpiry){
+            cells.add(new EnrollmentActionsHasCell("Alterar data de expiração", getExtendExpiryDelegate()));
+        }
         cells.add(new EnrollmentActionsHasCell("Transferir", getTransferDelegate()));
         cells.add(new EnrollmentActionsHasCell("Perfil", getGoToProfileDelegate()));
         cells.add(new EnrollmentActionsHasCell("Certificado", getGenerateCertificateDelegate()));
@@ -534,6 +565,22 @@ public class GenericAdminCourseClassView extends Composite implements AdminCours
     @UiHandler("btnModalTransferCancel")
     void onModalTransferCancelButtonClicked(ClickEvent e) {
         transferModal.hide();
+    }
+
+    @UiHandler("btnModalExtendExpiryOK")
+    void onModalExtendExpiryOkButtonClicked(ClickEvent e) {
+        String days = expiryDaysTextBox.getText();
+        if (StringUtils.isSome(days) && FormHelper.isValidNumber(days) && Integer.parseInt(days) <= 3650 && Integer.parseInt(days) >= -3650) {
+            canPerformEnrollmentAction = false;
+            presenter.onModalExtendExpiryOkButtonClicked(selectedEnrollment.getEnrollment().getUUID(), days);
+        } else {
+            KornellNotification.show("Escolha o número de dias", AlertType.ERROR);
+        }
+    }
+
+    @UiHandler("btnModalExtendExpiryCancel")
+    void onModalExtendExpiryCancelButtonClicked(ClickEvent e) {
+        extendExpiryModal.hide();
     }
 
     @UiHandler("btnBatchCancelModalOK")
@@ -611,6 +658,7 @@ public class GenericAdminCourseClassView extends Composite implements AdminCours
         } else {
             errorModal.hide();
             transferModal.hide();
+            extendExpiryModal.hide();
         }
     }
 
@@ -699,6 +747,21 @@ public class GenericAdminCourseClassView extends Composite implements AdminCours
                                     }
                                 }
                             });
+                }
+            }
+        };
+    }
+
+    private Delegate<EnrollmentTO> getExtendExpiryDelegate() {
+        return new Delegate<EnrollmentTO>() {
+            @Override
+            public void execute(EnrollmentTO object) {
+                if (canPerformEnrollmentAction
+                        && (!InstitutionType.DASHBOARD.equals(session.getInstitution().getInstitutionType()))) {
+                    selectedEnrollment = object;
+                    extendExpiryModal.setTitle("Alterar data de expiração");
+                    txtModalExtendExpiry1.setText("Coloque abaixo a quantidade de dias que deseja adicionar/remover");
+                    extendExpiryModal.show();
                 }
             }
         };
@@ -796,6 +859,9 @@ public class GenericAdminCourseClassView extends Composite implements AdminCours
                         btn.addStyleName("btnNotSelected");
                     } else if ("Reenviar Email de Matrícula".equals(actionName)) {
                         btn.setIcon(IconType.ENVELOPE);
+                        btn.addStyleName("btnNotSelected");
+                    } else if ("Alterar data de expiração".equals(actionName)) {
+                        btn.setIcon(IconType.CALENDAR);
                         btn.addStyleName("btnNotSelected");
                     }
 

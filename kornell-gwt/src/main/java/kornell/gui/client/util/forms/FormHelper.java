@@ -17,6 +17,10 @@ import com.github.gwtbootstrap.client.ui.constants.Device;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.ui.Image;
 
+import com.google.gwt.user.datepicker.client.CalendarUtil;
+import kornell.core.entity.CourseClass;
+import kornell.core.entity.Enrollment;
+import kornell.core.to.CourseClassTO;
 import kornell.gui.client.KornellConstants;
 import kornell.gui.client.KornellMessages;
 import kornell.gui.client.util.ClientConstants;
@@ -25,6 +29,7 @@ import kornell.gui.client.util.forms.formfield.KornellFormFieldWrapper;
 import kornell.gui.client.util.forms.formfield.PasswordTextBoxFormField;
 import kornell.gui.client.util.forms.formfield.TextAreaFormField;
 import kornell.gui.client.util.forms.formfield.TextBoxFormField;
+import kornell.gui.client.util.view.KornellNotification;
 
 @SuppressWarnings("deprecation")
 public class FormHelper {
@@ -49,11 +54,34 @@ public class FormHelper {
         return field == null ? false : field.trim().matches(USERNAME_PATTERN);
     }
 
+    public static boolean isEnrollmentExpired(CourseClassTO courseClassTO) {
+        return isEnrollmentExpired(courseClassTO.getCourseClass(), courseClassTO.getEnrollment());
+    }
+
+    public static boolean isEnrollmentExpired(CourseClass courseClass, Enrollment enrollment) {
+        if(isEnrollmentExpires(courseClass, enrollment)){
+            Date endDate = new Date(enrollment.getEndDate().getTime());
+            CalendarUtil.addDaysToDate(endDate, 1);
+            return (new Date()).after(endDate);
+        }
+        return false;
+    }
+
+    public static boolean isEnrollmentExpires(CourseClassTO courseClassTO) {
+        return isEnrollmentExpires(courseClassTO.getCourseClass(), courseClassTO.getEnrollment());
+    }
+
+    public static boolean isEnrollmentExpires(CourseClass courseClass, Enrollment enrollment) {
+        boolean courseClassHasExpiry = courseClass.getEnrollmentExpiryDays() != null && courseClass.getEnrollmentExpiryDays() > 0;
+        boolean enrollmentHasEndDate = enrollment.getEndDate() != null;
+        return courseClassHasExpiry && enrollmentHasEndDate;
+    }
+
     public boolean isPasswordValid(String field) {
         return field == null ? false : field.trim().matches(PASSWORD_PATTERN);
     }
 
-    public boolean isValidNumber(String field) {
+    public static boolean isValidNumber(String field) {
         return field == null ? false : field.trim().matches("^[-+]?[0-9]*\\.?[0-9]+$");
     }
 

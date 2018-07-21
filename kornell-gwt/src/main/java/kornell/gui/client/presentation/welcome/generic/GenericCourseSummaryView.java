@@ -36,6 +36,7 @@ import kornell.core.entity.EntityFactory;
 import kornell.core.to.CourseClassTO;
 import kornell.core.to.EnrollmentTO;
 import kornell.core.to.TOFactory;
+import kornell.gui.client.Kornell;
 import kornell.gui.client.KornellConstants;
 import kornell.gui.client.personnel.classroom.Student;
 import kornell.gui.client.personnel.classroom.Teacher;
@@ -43,6 +44,8 @@ import kornell.gui.client.personnel.classroom.Teachers;
 import kornell.gui.client.presentation.classroom.ClassroomPlace;
 import kornell.gui.client.util.ClientConstants;
 import kornell.gui.client.util.EnumTranslator;
+import kornell.gui.client.util.forms.FormHelper;
+import kornell.gui.client.util.view.KornellNotification;
 
 public class GenericCourseSummaryView extends Composite {
     interface MyUiBinder extends UiBinder<Widget, GenericCourseSummaryView> {
@@ -112,6 +115,14 @@ public class GenericCourseSummaryView extends Composite {
         if (courseClassTO.getEnrollment() != null
                 && EnrollmentState.cancelled.equals(courseClassTO.getEnrollment().getState())) {
             pStatusErr.setText(constants.cancelledClassLabel());
+            pStatusErr.removeStyleName("shy");
+        } else if (courseClassTO.getEnrollment() != null
+                && FormHelper.isEnrollmentExpired(courseClassTO)) {
+            pStatusErr.setText(constants.expiredClassLabel() + " " + DateTimeFormat.getFormat("yyyy-MM-dd").format(courseClassTO.getEnrollment().getEndDate()) + ")");
+            pStatusErr.removeStyleName("shy");
+        } else if (courseClassTO.getEnrollment() != null
+                && !FormHelper.isEnrollmentExpired(courseClassTO) && FormHelper.isEnrollmentExpires(courseClassTO)) {
+            pStatusErr.setText(constants.expiresClassLabel() + " " + DateTimeFormat.getFormat("yyyy-MM-dd").format(courseClassTO.getEnrollment().getEndDate()) + ")");
             pStatusErr.removeStyleName("shy");
         }
         if (!EntityState.active.equals(courseClassTO.getCourseClass().getState())) {

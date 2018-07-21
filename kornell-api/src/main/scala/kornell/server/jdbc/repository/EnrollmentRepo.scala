@@ -2,6 +2,7 @@ package kornell.server.jdbc.repository
 
 import java.math.BigDecimal
 import java.math.BigDecimal._
+import java.util.Date
 
 import kornell.core.entity.ContentSpec._
 import kornell.core.entity.{Assessment, ChatThreadType, Enrollment}
@@ -17,6 +18,7 @@ import scala.util.matching.Regex
 
 //TODO: Specific column names and proper sql
 class EnrollmentRepo(uuid: String) {
+
 
   lazy val finder = sql" SELECT * FROM Enrollment e WHERE uuid = ${uuid} "
 
@@ -38,8 +40,8 @@ class EnrollmentRepo(uuid: String) {
       assessmentScore = ${e.getAssessmentScore},
       certifiedAt = ${e.getCertifiedAt},
       parentEnrollmentUUID = ${e.getParentEnrollmentUUID},
-      start_date = ${e.getStartDate},
-      end_date = ${e.getEndDate}
+      startDate = ${e.getStartDate},
+      endDate = ${e.getEndDate}
     where uuid = ${e.getUUID} """.executeUpdate
 
     EnrollmentsRepo.updateCache(sql" SELECT * FROM Enrollment e WHERE uuid = ${uuid}".first[Enrollment].get)
@@ -220,6 +222,19 @@ class EnrollmentRepo(uuid: String) {
       set postAssessmentScore = ${score}
         where uuid = ${uuid}
   """.executeUpdate
+
+  def addDaysToExpiryDate(numberOfDays: String): Unit = {
+    val enrollment = first.get
+    val newEndDate = new DateTime(enrollment.getEndDate).plusDays(Integer.parseInt(numberOfDays)).toDate
+
+    sql"""
+      update Enrollment
+      set endDate = ${newEndDate}
+        where uuid = ${uuid}
+    """.executeUpdate
+
+    EnrollmentsRepo.updateCache(sql" SELECT * FROM Enrollment e WHERE uuid = ${uuid}".first[Enrollment].get)
+  }
 
 }
 

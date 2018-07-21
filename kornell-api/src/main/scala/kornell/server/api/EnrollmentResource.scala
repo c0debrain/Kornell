@@ -3,6 +3,7 @@ package kornell.server.api
 import java.util
 
 import javax.ws.rs._
+import javax.ws.rs.core.Response
 import kornell.core.entity._
 import kornell.core.lom.Contents
 import kornell.core.to.EnrollmentLaunchTO
@@ -199,6 +200,13 @@ class EnrollmentResource(uuid: String) {
     } else {
       ""
     }
+  }
+
+  @PUT
+  @Path("addDaysToExpiryDate/{numberOfDays}")
+  def addDaysToExpiryDate(@PathParam("numberOfDays") numberOfDays: String): Response = {
+    EnrollmentRepo(uuid).addDaysToExpiryDate(numberOfDays)
+    Response.noContent.build
   }
 
   @GET

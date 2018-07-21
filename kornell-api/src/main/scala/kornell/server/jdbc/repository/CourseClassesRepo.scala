@@ -55,7 +55,8 @@ object CourseClassesRepo {
                 startDate,
                 ecommerceIdentifier,
                 thumbUrl,
-                sandbox)
+                sandbox,
+                enrollmentExpiryDays)
         values(${courseClass.getUUID},
                ${courseClass.getName},
                ${courseClass.getCourseVersionUUID},
@@ -77,7 +78,8 @@ object CourseClassesRepo {
                ${courseClass.getStartDate},
                ${courseClass.getEcommerceIdentifier},
                ${courseClass.getThumbUrl},
-               ${courseClass.isSandbox}
+               ${courseClass.isSandbox},
+               ${courseClass.getEnrollmentExpiryDays}
                )
       """.executeUpdate
       ChatThreadsRepo.addParticipantsToCourseClassThread(courseClass)
@@ -154,6 +156,7 @@ object CourseClassesRepo {
           cc.ecommerceIdentifier as ecommerceIdentifier,
           cc.thumbUrl as courseClassThumbUrl,
           cc.sandbox as sandbox,
+          cc.enrollmentExpiryDays as enrollmentExpiryDays,
           irp.name as institutionRegistrationPrefixName
       from Course c
         join CourseVersion cv on cv.courseUUID = c.uuid

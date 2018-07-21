@@ -92,16 +92,26 @@
 	        </g:FlowPanel>
 	      </g:FlowPanel>
 	    </b:Modal>
-	    <b:Modal ui:field="transferModal" backdrop="STATIC" addStyleNames="forgotPasswordModal">
-	       <g:FlowPanel>
-	           <g:Label ui:field="txtModalTransfer1"></g:Label>
-	           <b:ListBox ui:field="courseClassListBox" addStyleNames="marginTop15 fillWidth"></b:ListBox>
-	           <g:FlowPanel addStyleNames="standardButtonBar">
-	               <g:Button ui:field="btnModalTransferOK" addStyleNames="btnAction btnStandard"/>
-	               <g:Button ui:field="btnModalTransferCancel" addStyleNames="btnNotSelected btnStandard"/>
-	           </g:FlowPanel>
-	       </g:FlowPanel>
-	    </b:Modal>
+		<b:Modal ui:field="transferModal" backdrop="STATIC" addStyleNames="forgotPasswordModal">
+			<g:FlowPanel>
+				<g:Label ui:field="txtModalTransfer1"></g:Label>
+				<b:ListBox ui:field="courseClassListBox" addStyleNames="marginTop15 fillWidth"></b:ListBox>
+				<g:FlowPanel addStyleNames="standardButtonBar">
+					<g:Button ui:field="btnModalTransferOK" addStyleNames="btnAction btnStandard"/>
+					<g:Button ui:field="btnModalTransferCancel" addStyleNames="btnNotSelected btnStandard"/>
+				</g:FlowPanel>
+			</g:FlowPanel>
+		</b:Modal>
+		<b:Modal ui:field="extendExpiryModal" backdrop="STATIC" addStyleNames="forgotPasswordModal">
+			<g:FlowPanel>
+				<g:Label ui:field="txtModalExtendExpiry1"></g:Label>
+				<b:TextBox ui:field="expiryDaysTextBox" addStyleNames="marginTop15 fillWidth maxWidth97"></b:TextBox>
+				<g:FlowPanel addStyleNames="standardButtonBar">
+					<g:Button ui:field="btnModalExtendExpiryOK" addStyleNames="btnAction btnStandard"/>
+					<g:Button ui:field="btnModalExtendExpiryCancel" addStyleNames="btnNotSelected btnStandard"/>
+				</g:FlowPanel>
+			</g:FlowPanel>
+		</b:Modal>
 	</g:FlowPanel>
 
 </ui:UiBinder>

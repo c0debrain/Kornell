@@ -45,6 +45,8 @@ public interface AdminCourseClassView extends IsWidget {
         void upsertCourseClass(CourseClass courseClass);
 
         void onBatchCancelModalOkButtonClicked(String txtCancelEnrollmentBatch);
+
+        void onModalExtendExpiryOkButtonClicked(String uuid, String selectedValue);
     }
 
     void setPresenter(Presenter presenter);

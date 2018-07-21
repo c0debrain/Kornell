@@ -71,7 +71,9 @@ package object repository {
       r.getString("institutionRegistrationPrefixUUID"), r.getBoolean("courseClassChatEnabled"),
       r.getBoolean("chatDockEnabled"), r.getBoolean("allowBatchCancellation"),
       r.getBoolean("tutorChatEnabled"), r.getBoolean("approveEnrollmentsAutomatically"),
-      r.getDate("startDate"), r.getString("ecommerceIdentifier"), r.getString("thumbUrl"), r.getBoolean("sandbox"))
+      r.getDate("startDate"), r.getString("ecommerceIdentifier"),
+      r.getString("thumbUrl"), r.getBoolean("sandbox"),
+      r.getInt("enrollmentExpiryDays"))
 
   implicit def toCourse(rs: ResultSet): Course = newCourse(
     rs.getString("uuid"),
@@ -154,7 +156,8 @@ package object repository {
       null,
       rs.getString("ecommerceIdentifier"),
       rs.getString("courseClassThumbUrl"),
-      rs.getBoolean("sandbox"))
+      rs.getBoolean("sandbox"),
+      rs.getInt("enrollmentExpiryDays"))
 
     TOs.newCourseClassTO(course, version, clazz, rs.getString("institutionRegistrationPrefixName"))
   }
@@ -208,8 +211,8 @@ package object repository {
       rs.getTimestamp("certifiedAt"),
       rs.getString("courseVersionUUID"),
       rs.getString("parentEnrollmentUUID"),
-      rs.getDate("start_date"),
-      rs.getDate("end_date"),
+      rs.getDate("startDate"),
+      rs.getDate("endDate"),
       rs.getBigDecimal("preAssessmentScore"),
       rs.getBigDecimal("postAssessmentScore"),
       EnrollmentSource.valueOf(rs.getString("enrollmentSource")))
@@ -230,7 +233,9 @@ package object repository {
         .orNull,
       rs.getTimestamp("lastAssessmentUpdate"),
       rs.getBigDecimal("assessmentScore"),
-      rs.getTimestamp("certifiedAt"))
+      rs.getTimestamp("certifiedAt"),
+      null, null, null,
+      rs.getDate("endDate"))
 
     TOs.newEnrollmentTO(enrollment, rs.getString("personUUID"), rs.getString("fullName"), rs.getString("username"))
   }

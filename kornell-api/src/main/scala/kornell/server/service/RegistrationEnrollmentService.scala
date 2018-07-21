@@ -9,6 +9,9 @@ import kornell.server.api.ActomResource
 import kornell.server.jdbc.repository.{CourseClassRepo, CourseVersionRepo, EnrollmentsRepo, EventsRepo, InstitutionRepo, InstitutionsRepo, PeopleRepo, PersonRepo, RolesRepo}
 import kornell.server.repository.TOs._
 import kornell.server.util.EmailService
+import java.util.Date
+
+import org.joda.time.DateTime
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable.ListBuffer
@@ -86,7 +89,7 @@ object RegistrationEnrollmentService {
       EnrollmentsRepo.byCourseClassAndPerson(enrollmentRequest.getCourseClassUUID, person.getUUID, getDeleted = true) match {
         case Some(enrollment) => deanUpdateExistingEnrollment(person, enrollment, enrollmentRequest.getInstitutionUUID, dean, enrollmentRequest.isCancelEnrollment)
         case None => {
-          val enrollment = createEnrollment(person.getUUID, enrollmentRequest.getCourseClassUUID, null, EnrollmentState.enrolled, dean, null, enrollmentRequest.getEnrollmentSource)
+          val enrollment = createEnrollment(person.getUUID, enrollmentRequest.getCourseClassUUID, null, EnrollmentState.enrolled, dean, null, enrollmentRequest.getEnrollmentSource, null)
           createChildEnrollments(enrollment, enrollmentRequest.getCourseVersionUUID, person.getUUID, dean)
         }
       }
@@ -116,7 +119,7 @@ object RegistrationEnrollmentService {
 
     CourseVersionRepo(courseVersionUUID).getChildren.foreach(cv => {
       for (i <- 0 until cv.getInstanceCount) {
-        val childEnrollment = createEnrollment(personUUID, null, cv.getUUID, EnrollmentState.enrolled, dean, parentEnrollmentUUID, enrollment.getEnrollmentSource)
+        val childEnrollment = createEnrollment(personUUID, null, cv.getUUID, EnrollmentState.enrolled, dean, parentEnrollmentUUID, enrollment.getEnrollmentSource, null)
         val childUUID = childEnrollment.getUUID
         enrollmentMap(s"knl.module.${moduleCounter}.name") = cv.getLabel + SEP + i
         enrollmentMap(s"knl.module.${moduleCounter}.index") = s"$i"
@@ -200,6 +203,7 @@ object RegistrationEnrollmentService {
 
   private def createEnrollment(personUUID: String, courseClassUUID: String, courseVersionUUID: String, enrollmentState: EnrollmentState, enroller: Person, parentEnrollmentUUID: String = null, enrollmentSource: EnrollmentSource = null, notes: String = null): Enrollment = {
     val enrollerUUID = if (enroller == null) null else enroller.getUUID
+
     val enrollment = EnrollmentsRepo.create(
       courseClassUUID = courseClassUUID,
       personUUID = personUUID,

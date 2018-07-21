@@ -42,6 +42,7 @@ import kornell.core.lom.ExternalPage;
 import kornell.core.to.CourseClassTO;
 import kornell.core.to.LibraryFilesTO;
 import kornell.core.util.StringUtils;
+import kornell.gui.client.Kornell;
 import kornell.gui.client.KornellConstants;
 import kornell.gui.client.ViewFactory;
 import kornell.gui.client.event.ShowDetailsEvent;
@@ -54,6 +55,7 @@ import kornell.gui.client.presentation.classroom.ClassroomView.Presenter;
 import kornell.gui.client.presentation.message.MessagePresenter;
 import kornell.gui.client.presentation.profile.ProfilePlace;
 import kornell.gui.client.util.ClientConstants;
+import kornell.gui.client.util.forms.FormHelper;
 import kornell.gui.client.util.view.KornellNotification;
 
 public class GenericCourseDetailsView extends Composite implements ShowDetailsEventHandler {
@@ -103,7 +105,7 @@ public class GenericCourseDetailsView extends Composite implements ShowDetailsEv
     private Contents contents;
     private List<Actom> actoms;
 
-    private boolean isEnrolled, isCancelled, isInactiveCourseClass, isClassroomJsonNeededAndAbscent;
+    private boolean isEnrolled, isCancelled, isExpired, isInactiveCourseClass, isClassroomJsonNeededAndAbscent;
 
     public GenericCourseDetailsView(EventBus bus, KornellSession session, PlaceController placeCtrl,
             ViewFactory viewFactory) {
@@ -145,10 +147,13 @@ public class GenericCourseDetailsView extends Composite implements ShowDetailsEv
     private void display() {
         isEnrolled = false;
         isCancelled = false;
+        isExpired = false;
 
         CourseClassTO courseClassTO = session.getCurrentCourseClass();
         if (courseClassTO != null && courseClassTO.getEnrollment() != null) {
-            if (EnrollmentState.enrolled.equals(courseClassTO.getEnrollment().getState())) {
+            if (FormHelper.isEnrollmentExpired(courseClassTO)){
+                isExpired = true;
+            } else if (EnrollmentState.enrolled.equals(courseClassTO.getEnrollment().getState())) {
                 isEnrolled = true;
             } else if (EnrollmentState.cancelled.equals(courseClassTO.getEnrollment().getState())) {
                 isCancelled = true;
@@ -443,7 +448,7 @@ public class GenericCourseDetailsView extends Composite implements ShowDetailsEv
         if (actoms != null && actoms.size() > 1) {
             displayButton(btnTopics, constants.btnTopics(), constants.btnTopicsInfo(), false);
         }
-        if (isInactiveCourseClass) {
+        if (isInactiveCourseClass || isExpired) {
             if (courseClassTO.getCourseClass().getRequiredScore() != null) {
                 displayButton(btnCertification, constants.btnCertification(), constants.printCertificateButton(),
                         false);
@@ -538,6 +543,8 @@ public class GenericCourseDetailsView extends Composite implements ShowDetailsEv
             text = constants.inactiveCourseClass();
         } else if (isCancelled) {
             text = constants.cancelledEnrollment();
+        } else if (isExpired) {
+            text = constants.expiredEnrollment();
         } else if (!isEnrolled) {
             text = constants.enrollmentNotApproved()
                     + (StringUtils.isSome(session.getCurrentUser().getPerson().getEmail()) ? ""

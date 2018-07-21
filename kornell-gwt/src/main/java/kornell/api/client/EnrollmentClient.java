@@ -26,4 +26,8 @@ public class EnrollmentClient extends RESTClient {
         GET("enrollments", enrollmentUUID, "launch").go(callback);
     }
 
+    public void addDaysToExpiryDate(String numberOfDays, Callback<Void> callback) {
+        PUT("enrollments", enrollmentUUID, "addDaysToExpiryDate", numberOfDays).go(callback);
+    }
+
 }

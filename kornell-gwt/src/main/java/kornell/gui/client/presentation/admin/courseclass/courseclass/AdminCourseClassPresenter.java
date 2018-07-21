@@ -239,6 +239,9 @@ public class AdminCourseClassPresenter extends PaginationPresenterImpl<Enrollmen
                     && (!InstitutionType.DASHBOARD.equals(session.getInstitution().getInstitutionType()));
         } else if ("Reenviar Email de Matrícula".equals(actionName)) {
             return session.isCourseClassAdmin();
+        } else if ("Alterar data de expiração".equals(actionName)) {
+            return session.isCourseClassAdmin()
+                    && (!InstitutionType.DASHBOARD.equals(session.getInstitution().getInstitutionType()));
         }
         return false;
     }
@@ -558,6 +561,7 @@ public class AdminCourseClassPresenter extends PaginationPresenterImpl<Enrollmen
 
     @Override
     public void onModalTransferOkButtonClicked(final String enrollmentUUID, final String courseClassUUID) {
+        bus.fireEvent(new ShowPacifierEvent(true));
         session.enrollments().getEnrollmentsByCourseClass(courseClassUUID, new Callback<EnrollmentsTO>() {
             @Override
             public void ok(final EnrollmentsTO enrollmentsTO) {
@@ -566,6 +570,7 @@ public class AdminCourseClassPresenter extends PaginationPresenterImpl<Enrollmen
                     public void ok(CourseClassTO courseClassTO) {
                         if ((enrollmentsTO.getEnrollmentTOs().size() + 1) > courseClassTO.getCourseClass()
                                 .getMaxEnrollments()) {
+                            bus.fireEvent(new ShowPacifierEvent(false));
                             KornellNotification.show(
                                     "Não foi possível concluir a requisição. Verifique a quantidade de matrículas disponíveis nesta turma",
                                     AlertType.ERROR, 5000);
@@ -586,6 +591,7 @@ public class AdminCourseClassPresenter extends PaginationPresenterImpl<Enrollmen
 
                                         @Override
                                         protected void conflict(KornellErrorTO kornellErrorTO) {
+                                            bus.fireEvent(new ShowPacifierEvent(false));
                                             KornellNotification.show(
                                                     KornellConstantsHelper.getErrorMessage(kornellErrorTO),
                                                     AlertType.ERROR);
@@ -594,6 +600,30 @@ public class AdminCourseClassPresenter extends PaginationPresenterImpl<Enrollmen
                         }
                     }
                 });
+            }
+        });
+    }
+
+    @Override
+    public void onModalExtendExpiryOkButtonClicked(String enrollmentUUID, String numberOfDays) {
+        bus.fireEvent(new ShowPacifierEvent(true));
+        view.showModal(false, "");
+        session.enrollment(enrollmentUUID).addDaysToExpiryDate(numberOfDays, new Callback<Void>() {
+            @Override
+            public void ok(Void to) {
+                bus.fireEvent(new ShowPacifierEvent(false));
+                getEnrollments(session.getCurrentCourseClass().getCourseClass().getUUID());
+                view.setCanPerformEnrollmentAction(true);
+                KornellNotification.show("A data de expiração da matrícula foi alterada com sucesso.", 2000);
+            }
+
+            @Override
+            protected void conflict(KornellErrorTO kornellErrorTO) {
+                bus.fireEvent(new ShowPacifierEvent(false));
+                view.setCanPerformEnrollmentAction(true);
+                KornellNotification.show(
+                        KornellConstantsHelper.getErrorMessage(kornellErrorTO),
+                        AlertType.ERROR);
             }
         });
     }

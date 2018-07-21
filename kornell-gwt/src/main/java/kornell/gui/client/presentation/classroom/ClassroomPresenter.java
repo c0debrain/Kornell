@@ -31,6 +31,7 @@ import kornell.gui.client.presentation.vitrine.VitrinePlace;
 import kornell.gui.client.sequence.Sequencer;
 import kornell.gui.client.sequence.SequencerFactory;
 import kornell.gui.client.util.ClientProperties;
+import kornell.gui.client.util.forms.FormHelper;
 import kornell.gui.client.util.view.KornellNotification;
 import kornell.scorm.client.scorm12.SCORM12Runtime;
 
@@ -113,11 +114,12 @@ public class ClassroomPresenter implements ClassroomView.Presenter {
         EntityState courseClassState = courseClass != null ? courseClass.getState() : null;
 
         final boolean isEnrolled = enrollment != null && EnrollmentState.enrolled.equals(enrollment.getState());
+        final boolean isExpired = enrollment != null && courseClass != null && FormHelper.isEnrollmentExpired(courseClass, enrollment);
         final boolean isCourseClassActive = courseClassState != null && !EntityState.inactive.equals(courseClassState);
         final boolean isWizardCourse = course != null && ContentSpec.WIZARD.equals(course.getContentSpec());
         final boolean isClassroomJsonNeededAndAbscent = isWizardCourse && new WizardTeacher(courseClassTO).getClassroomJson() == null;
         final boolean showCourseClassContent = enrollment == null
-                || (isEnrolled && isCourseClassActive && !isClassroomJsonNeededAndAbscent);
+                || (isEnrolled && isCourseClassActive && !isClassroomJsonNeededAndAbscent && !isExpired);
 
         if (showCourseClassContent) {
             bus.fireEvent(new ShowPacifierEvent(true));

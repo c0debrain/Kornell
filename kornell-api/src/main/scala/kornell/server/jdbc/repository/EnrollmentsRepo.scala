@@ -1,5 +1,6 @@
 package kornell.server.jdbc.repository
 
+import java.util.Date
 import java.util.concurrent.TimeUnit.MINUTES
 
 import com.google.common.cache.{CacheBuilder, CacheLoader, LoadingCache}
@@ -10,6 +11,7 @@ import kornell.core.util.UUID
 import kornell.server.jdbc.PreparedStmt
 import kornell.server.jdbc.SQL._
 import kornell.server.repository.{Entities, TOs}
+import org.joda.time.DateTime
 
 import scala.collection.JavaConverters._
 
@@ -61,6 +63,7 @@ object EnrollmentsRepo {
           (p.fullName like ${filteredSearchTerm}
           or pw.username like ${filteredSearchTerm}
           or p.email like ${filteredSearchTerm})
+          group by if(pw.username is not null, pw.username, p.email)
         """.first[String].get.toInt
     })
     enrollmentsTO
@@ -133,12 +136,24 @@ object EnrollmentsRepo {
     create(Entities.newEnrollment(null, null, courseClassUUID, personUUID, null, "", enrollmentState, null, null, null, null, null, courseVersionUUID, parentEnrollmentUUID, null, null, null, null, enrollmentSource))
 
   def create(enrollment: Enrollment): Enrollment = {
+
     if (enrollment.getUUID == null)
       enrollment.setUUID(UUID.random)
     if (enrollment.getCourseClassUUID != null && enrollment.getCourseVersionUUID != null)
       throw new EntityConflictException("doubleEnrollmentCriteria")
+
+    val endDate: Date = if (enrollment.getEndDate != null){
+      enrollment.getEndDate
+    } else if (enrollment.getCourseClassUUID != null) {
+      val courseClass = CourseClassRepo(enrollment.getCourseClassUUID).get
+      val enrollmentExpiryDays = courseClass.getEnrollmentExpiryDays
+      if (enrollmentExpiryDays == null || enrollmentExpiryDays <= 0) null else {
+        DateTime.now.plusDays(enrollmentExpiryDays).toDate
+      }
+    } else null
+
     sql"""
-      insert into Enrollment(uuid,courseClassUUID,personUUID,enrolledOn,state,courseVersionUUID,parentEnrollmentUUID,enrollmentSource)
+      insert into Enrollment(uuid,courseClassUUID,personUUID,enrolledOn,state,courseVersionUUID,parentEnrollmentUUID,enrollmentSource,endDate)
       values(
         ${enrollment.getUUID},
         ${enrollment.getCourseClassUUID},
@@ -147,7 +162,8 @@ object EnrollmentsRepo {
         ${enrollment.getState.toString},
         ${enrollment.getCourseVersionUUID},
         ${enrollment.getParentEnrollmentUUID},
-        ${enrollment.getEnrollmentSource.toString}
+        ${enrollment.getEnrollmentSource.toString},
+        ${endDate}
       )""".executeUpdate
     if (enrollment.getCourseClassUUID != null)
       ChatThreadsRepo.addParticipantsToCourseClassThread(CourseClassesRepo(enrollment.getCourseClassUUID).get)
@@ -175,7 +191,7 @@ object EnrollmentsRepo {
       join Person p on e.personUUID = p.uuid
         where cv.label = 'espinafre'
       and p.receiveEmailCommunication = 1
-      and e.end_date = concat(curdate(), ' 23:59:59')
+      and e.endDate = concat(curdate(), ' 23:59:59')
       and e.progress < 100
     """.map[Person](toPerson)
   }
