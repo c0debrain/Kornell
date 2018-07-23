@@ -103,7 +103,9 @@ app.controller('LectureController', [
           	}
           });
       });
-	  };
+
+      $rootScope.studentName = knlUtils.doLMSGetValueSanitized("cmi.core.student_name")
+    };
 
   	$scope.toggleStructureDebug = function(){
 	    $scope.isToggleStructureDebug = !$scope.isToggleStructureDebug;
