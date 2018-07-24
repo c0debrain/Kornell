@@ -90,7 +90,8 @@ object CourseCreationService {
       null,
       null,
       null,
-      true))
+      true,
+      0))
     courseClass
   }
 
