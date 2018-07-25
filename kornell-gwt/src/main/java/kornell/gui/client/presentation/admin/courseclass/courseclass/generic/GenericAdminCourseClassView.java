@@ -99,6 +99,7 @@ public class GenericAdminCourseClassView extends Composite implements AdminCours
     private int totalCount = 0;
     private EnrollmentTO selectedEnrollment;
     private CourseClassTO courseClassTO;
+    private boolean hasExpiry = false;
 
     @UiField
     FlowPanel adminHomePanel;
@@ -640,9 +641,14 @@ public class GenericAdminCourseClassView extends Composite implements AdminCours
 
         enrollmentsWrapper.clear();
 
-        if (table == null) {
+        boolean newHasExpiry = courseClassTO.getCourseClass().getEnrollmentExpiryDays() != null && courseClassTO.getCourseClass().getEnrollmentExpiryDays() > 0;
+
+        if (table == null || (newHasExpiry != hasExpiry)) {
+            this.hasExpiry = newHasExpiry;
             initTable();
         }
+        this.hasExpiry = newHasExpiry;
+
         table.build(enrollmentsWrapper, enrollmentsOriginal);
 
         title.setText("Participantes (" + presenter.getTotalRowCount() + ")");
