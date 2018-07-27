@@ -516,8 +516,15 @@ public class GenericCourseClassConfigView extends Composite {
 
         if (!formHelper.isLengthValid(enrollmentExpiryDays.getFieldPersistText(), 1)) {
             enrollmentExpiryDays.setError("Insira o limite de dias para conclusão.");
-        } else if (!formHelper.isValidNumber(enrollmentExpiryDays.getFieldPersistText())) {
-            enrollmentExpiryDays.setError("Número inteiro inválido.");
+        } else {
+            try{
+                int expiryDays = Integer.parseInt(enrollmentExpiryDays.getFieldPersistText());
+                if(expiryDays < 0 || expiryDays > 65535) {
+                    enrollmentExpiryDays.setError("Número inválido.");
+                }
+            } catch (NumberFormatException nfe) {
+                enrollmentExpiryDays.setError("Número inválido.");
+            }
         }
 
         return !formHelper.checkErrors(fields);
