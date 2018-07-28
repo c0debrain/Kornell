@@ -53,17 +53,17 @@ object EnrollmentsRepo {
         0
       else
         sql"""
-          select count(*),
-          if(pw.username is not null, pw.username, p.email) as username
-          from Enrollment e
-          join Person p on e.personUUID = p.uuid
-          left join Password pw on p.uuid = pw.personUUID
-          where e.courseClassUUID = ${courseClassUUID} and
-          e.state <> ${EnrollmentState.deleted.toString} and
-          (p.fullName like ${filteredSearchTerm}
-          or pw.username like ${filteredSearchTerm}
-          or p.email like ${filteredSearchTerm})
-          group by if(pw.username is not null, pw.username, p.email)
+          select count(*) from (
+            select if(pw.username is not null, pw.username, p.email) as username
+            from Enrollment e
+            join Person p on e.personUUID = p.uuid
+            left join Password pw on p.uuid = pw.personUUID
+            where e.courseClassUUID = ${courseClassUUID} and
+            e.state <> ${EnrollmentState.deleted.toString} and
+            (p.fullName like ${filteredSearchTerm}
+            or pw.username like ${filteredSearchTerm}
+            or p.email like ${filteredSearchTerm})
+           ) as a
         """.first[String].get.toInt
     })
     enrollmentsTO
