@@ -112,7 +112,12 @@ class AuthRepo() {
       select p.* from Person p
       join Password pwd on pwd.personUUID = p.uuid
       where pwd.username = ${username} and p.forcePasswordUpdate = true
-    """.first[Person]
+    """.first[Person].orElse(
+      sql"""
+        select p.* from Person p
+        where p.email = ${username} and p.forcePasswordUpdate = true
+      """.first[Person]
+    )
 
   def hasPassword(institutionUUID: String, username: String): Boolean =
     sql"""
