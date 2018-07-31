@@ -45,7 +45,7 @@ object ReportInstitutionBillingGenerator {
         JOIN Person p ON p.uuid = att.personUUID
         JOIN Password pw ON pw.personUUID = p.uuid
         WHERE att.eventFiredAt >= ${periodStart + "-01 00:00:00"} AND att.eventFiredAt < ${periodEnd + "-01 00:00:00"}
-        AND (email IS null OR email NOT LIKE '%craftware.com.br%')
+        AND (email IS null OR email NOT LIKE '%craftware.com%' OR email NOT LIKE '%eduvem.com%')
         AND att.institutionUUID = ${institutionUUID}
         AND (SELECT count(uuid) FROM Enrollment where personUUID = p.uuid and DATE_FORMAT(enrolledOn, '%Y-%m-%d')< ${periodEnd}) > 0
         GROUP BY p.uuid, pw.username
@@ -97,7 +97,8 @@ object ReportInstitutionBillingGenerator {
           AND e.lastBilledAt >= ${periodStart + "-01 00:00:00"}
           AND e.lastBilledAt < ${periodEnd + "-01 00:00:00"})
         )
-      AND (email IS null OR email NOT LIKE '%craftware.com.br%')
+      AND (email IS null OR email NOT LIKE '%craftware.com%' OR email NOT LIKE '%eduvem.com%')
+      AND cc.sandbox = 0
       ORDER BY c.name, cv.name, cc.name, p.fullName
       """.map[InstitutionBillingEnrollmentReportTO](toInstitutionBillingEnrollmentReportTO)
 

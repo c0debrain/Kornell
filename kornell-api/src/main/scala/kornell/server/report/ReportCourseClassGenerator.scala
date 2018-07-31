@@ -148,6 +148,7 @@ object ReportCourseClassGenerator {
           (cc.state = '${EntityState.active.toString}' or '${courseUUID}' = 'null') and
           (e.courseClassUUID = '${courseClassUUID}' or '${courseClassUUID}' = 'null') and
           (c.uuid = '${courseUUID}' or '${courseUUID}' = 'null') and
+          cc.sandbox = 0 and
           e.state <> '${EnrollmentState.deleted.toString}'
       """
 
@@ -295,6 +296,7 @@ object ReportCourseClassGenerator {
           cc.state = '${EntityState.active.toString}' and
           (e.courseClassUUID = '${courseClassUUID}' or '${courseClassUUID}' = 'null') and
           (cv.courseUUID = '${courseUUID}' or '${courseUUID}' = 'null') and
+          cc.sandbox = 0 and
           e.state <> '${EnrollmentState.deleted.toString}'
       """
 
