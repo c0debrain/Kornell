@@ -8,6 +8,8 @@ import kornell.core.util.{StringUtils, UUID}
 import kornell.server.content.ContentManagers
 import kornell.server.jdbc.SQL._
 import kornell.server.service.{AssetService, S3Service}
+import java.math.BigDecimal
+import scala.collection.JavaConverters._
 
 class CourseVersionRepo(uuid: String) {
 
@@ -50,6 +52,9 @@ class CourseVersionRepo(uuid: String) {
       if (!skipAudit) {
         EventsRepo.logEntityChange(institutionUUID, AuditedEntityType.courseVersion, courseVersion.getUUID, oldCourseVersion, courseVersion)
       }
+
+      CourseClassesRepo.updateWizardClassesRequiredScore(courseVersion, skipAudit)
+
       courseVersion
     } else {
       throw new EntityConflictException("courseVersionAlreadyExists")

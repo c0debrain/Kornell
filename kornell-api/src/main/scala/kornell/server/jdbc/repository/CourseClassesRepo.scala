@@ -15,6 +15,9 @@ import kornell.server.repository.TOs
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable
+import java.math.BigDecimal
+
+import kornell.server.dev.util.WizardParser
 
 object CourseClassesRepo {
 
@@ -346,6 +349,12 @@ object CourseClassesRepo {
     }
   }
 
+  def byCourseVersion(courseVersionUUID: String): List[CourseClass] = {
+    sql"""
+      select * from CourseClass where courseVersionUUID = ${courseVersionUUID}
+    """.map[CourseClass](toCourseClass)
+  }
+
   def countByCourseVersion(courseVersionUUID: String): Int =
     sql"""select count(*)
       from CourseClass cc
@@ -364,6 +373,25 @@ object CourseClassesRepo {
     sql"""
       select * from CourseClass where sandbox = 1 and institutionUUID = ${institutionUUID} and state <> ${EntityState.deleted.toString}
     """.map[CourseClass](toCourseClass)
+  }
+
+  def updateWizardClassesRequiredScore(courseVersion: CourseVersion, updateOnlySandbox: Boolean) = {
+    val wizardRequiredScoreSandbox = WizardParser.getRequiredScore(courseVersion, true)
+    if (updateOnlySandbox) {
+      // save sandbox class with requiredScore
+      val sandboxCourseClass = CourseClassesRepo.sandboxForVersion(courseVersion.getUUID)
+      if (sandboxCourseClass.isDefined) {
+        CourseClassRepo(sandboxCourseClass.get.getUUID).updateRequiredScore(sandboxCourseClass.get, wizardRequiredScoreSandbox)
+      }
+    } else {
+      // save all classes with requiredScore
+      val wizardRequiredScore = WizardParser.getRequiredScore(courseVersion, false)
+      CourseClassesRepo.byCourseVersion(courseVersion.getUUID).foreach(courseClass => {
+        CourseClassRepo(courseClass.getUUID).updateRequiredScore(courseClass,
+          if(courseClass.isSandbox) wizardRequiredScoreSandbox else wizardRequiredScore
+        )
+      })
+    }
   }
 
   private def bindEnrollments(personUUID: String, courseClassesTO: CourseClassesTO): CourseClassesTO = {

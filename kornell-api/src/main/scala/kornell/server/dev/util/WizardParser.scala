@@ -1,13 +1,18 @@
 package kornell.server.dev.util
 
-import java.util.Date
+import java.math.BigDecimal
+import java.lang.Double
+
+import kornell.core.entity.CourseClass
+import kornell.core.entity.CourseVersion
 
 import scala.collection.mutable.ListBuffer
-import scala.util.Try
 import scala.util.parsing.json.JSON
 import kornell.core.lom.Content
 import kornell.core.lom.Contents
 import kornell.core.lom.Topic
+import kornell.core.util.StringUtils
+import kornell.server.jdbc.repository.CourseVersionsRepo
 import kornell.server.repository.LOM
 import kornell.server.util.Settings.BUILD_NUM
 import kornell.server.util.Settings.toOption
@@ -19,13 +24,26 @@ object WizardParser {
   val topicPattern: Regex = """#\s?(.*)""".r
   val buildNum: String = BUILD_NUM.getOpt.orElse("development_build").get
 
-  def parse(classroomJson: String, visited: List[String]): Contents = {
-    val json = JSON.parseFull(classroomJson)
-    val map: Map[String, Any] = json.get.asInstanceOf[Map[String, Any]]
-    parseLines(map, visited)
+  def getClassroomJsonMap(courseClass: CourseClass): Map[String, Any] = {
+    val courseVersion = CourseVersionsRepo.byCourseClassUUID(courseClass.getUUID).get
+    getClassroomJsonMap(courseVersion, courseClass.isSandbox)
   }
 
-  def parseLines(jsonMap: Map[String, Any], visited: List[String]): Contents = {
+  def getClassroomJsonMap(courseVersion: CourseVersion, isSandbox: Boolean): Map[String, Any] = {
+    val classroomJson = courseVersion.getClassroomJson
+    val classroomJsonPublished = courseVersion.getClassroomJsonPublished
+    val jsonString = if (isSandbox && StringUtils.isSome(classroomJson)) {
+      classroomJson
+    } else if (StringUtils.isSome(classroomJsonPublished)) {
+      classroomJsonPublished
+    } else {
+      ""
+    }
+    JSON.parseFull(jsonString).get.asInstanceOf[Map[String, Any]]
+  }
+
+  def findVisitedContent(courseClass: CourseClass, visited: List[String]): Contents = {
+    val jsonMap = getClassroomJsonMap(courseClass)
     val result = ListBuffer[Content]()
     var topic: Topic = null
     var index = 1 //should start with 1, in case of the ordering fallback
@@ -64,40 +82,26 @@ object WizardParser {
     LOM.newContents(contents)
   }
 
-  def parseLines(prefix: String, lines: Iterator[String], visited: List[String]): Contents = {
-    val result = ListBuffer[Content]()
-    var topic: Topic = null
-    var index = 1 //should start with 1, in case of the ordering fallback
-    lines foreach {
-      case topicPattern(topicName) => {
-        topic = LOM.newTopic(topicName)
-        result += LOM.newContent(topic)
+  def getRequiredScore(courseVersion: CourseVersion, isSandbox: Boolean): BigDecimal = {
+    var expectedGrade = new BigDecimal(0)
+    val jsonMap = getClassroomJsonMap(courseVersion, isSandbox)
+    val topics: List[Any] = jsonMap("modules").asInstanceOf[List[Any]]
+    topics foreach { topicObj =>
+      {
+        val topicObjMap = topicObj.asInstanceOf[Map[String, Any]]
+        val slides: List[Any] = topicObjMap("lectures").asInstanceOf[List[Any]]
+        slides foreach { slideObj =>
+          {
+            val slideObjMap = slideObj.asInstanceOf[Map[String, Any]]
+            val slideType = slideObjMap("type").asInstanceOf[String]
+            if(slideType == "finalExam"){
+              expectedGrade = new BigDecimal(slideObjMap("expectedGrade").asInstanceOf[Double])
+            }
+          }
+        }
       }
-
-      case line => {
-        val tokens = line.split(";")
-        val fileName = Try {
-          tokens(0)
-        }.getOrElse("")
-        val title = Try {
-          tokens(1)
-        }.getOrElse("")
-        val actomKey = Try {
-          tokens(2)
-        }.getOrElse(fileName)
-
-        val page = LOM.newExternalPage(prefix, fileName, title, actomKey, index)
-        page.setVisited(visited.contains(page.getKey))
-        val content = LOM.newContent(page)
-        if (topic != null)
-          topic.getChildren.add(content)
-        else
-          result += content
-        index += 1
-      }
-
     }
-    val contents = result.toList
-    LOM.newContents(contents)
+    expectedGrade
   }
+
 }

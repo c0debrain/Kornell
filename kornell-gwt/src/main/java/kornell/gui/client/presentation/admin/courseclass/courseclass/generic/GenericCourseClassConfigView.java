@@ -30,11 +30,7 @@ import com.google.web.bindery.event.shared.EventBus;
 
 import kornell.api.client.Callback;
 import kornell.api.client.KornellSession;
-import kornell.core.entity.CourseClass;
-import kornell.core.entity.EntityFactory;
-import kornell.core.entity.EntityState;
-import kornell.core.entity.InstitutionRegistrationPrefix;
-import kornell.core.entity.RegistrationType;
+import kornell.core.entity.*;
 import kornell.core.entity.role.RoleCategory;
 import kornell.core.to.CourseClassTO;
 import kornell.core.to.CourseTO;
@@ -53,6 +49,7 @@ import kornell.gui.client.util.forms.formfield.ListBoxFormField;
 import kornell.gui.client.util.view.KornellNotification;
 
 public class GenericCourseClassConfigView extends Composite {
+
     interface MyUiBinder extends UiBinder<Widget, GenericCourseClassConfigView> {
     }
 
@@ -70,7 +67,7 @@ public class GenericCourseClassConfigView extends Composite {
 
     private KornellSession session;
     private FormHelper formHelper = GWT.create(FormHelper.class);
-    private boolean isCreationMode, isInstitutionAdmin, allowPrefixEdit;
+    private boolean isCreationMode, isInstitutionAdmin, allowPrefixEdit, isWizardClass;
     boolean isCurrentUser, showContactDetails, isRegisteredWithCPF;
 
     private Presenter presenter;
@@ -139,6 +136,7 @@ public class GenericCourseClassConfigView extends Composite {
         this.fields = new ArrayList<KornellFormFieldWrapper>();
         courseClass = isCreationMode ? entityFactory.newCourseClass().as() : courseClassTO.getCourseClass();
         Boolean isAllowCertification = (courseClass.getRequiredScore() != null || isCreationMode);
+        isWizardClass = ContentSpec.WIZARD == courseClassTO.getCourseVersionTO().getCourseTO().getCourse().getContentSpec();
 
         profileFields.clear();
 
@@ -221,8 +219,8 @@ public class GenericCourseClassConfigView extends Composite {
 
         String requiredScoreStr = courseClass.getRequiredScore() == null ? ""
                 : courseClass.getRequiredScore().toString();
-        requiredScore = new KornellFormFieldWrapper("Nota para Aprovação",
-                formHelper.createTextBoxFormField(requiredScoreStr), isInstitutionAdmin, null,
+        requiredScore = new KornellFormFieldWrapper("Nota para Aprovação" + (isWizardClass ? " (wizard)" : ""),
+                formHelper.createTextBoxFormField(requiredScoreStr), isInstitutionAdmin && !isWizardClass, null,
                 "Se a nota for deixada como zero, a avaliação não será exigida para que os alunos matriculados finalizem o curso.");
         fields.add(requiredScore);
         profileFields.add(requiredScore);

@@ -45,17 +45,7 @@ object ContentRepository {
     val visited = getVisited(enrollment)
     if (isWizard) {
       val courseClass = CourseClassRepo(enrollment.getCourseClassUUID).get
-      val courseVersion = CourseVersionsRepo.byCourseClassUUID(enrollment.getCourseClassUUID).get
-      val classroomJson = courseVersion.getClassroomJson
-      val classroomJsonPublished = courseVersion.getClassroomJsonPublished
-      val json = if (courseClass.isSandbox && StringUtils.isSome(classroomJson)) {
-        classroomJson
-      } else if (StringUtils.isSome(classroomJsonPublished)) {
-        classroomJsonPublished
-      } else {
-        ""
-      }
-      WizardParser.parse(json, visited)
+      WizardParser.findVisitedContent(courseClass, visited)
     } else {
       val prefix = getPrefix(enrollment, person)
       val structureSrc = {

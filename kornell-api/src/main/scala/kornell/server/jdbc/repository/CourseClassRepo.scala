@@ -9,6 +9,7 @@ import kornell.core.util.{StringUtils, UUID}
 import kornell.server.authentication.ThreadLocalAuthenticator
 import kornell.server.jdbc.SQL.{SQLHelper, rsToString}
 import kornell.server.service.AssetService
+import java.math.BigDecimal
 
 import scala.collection.JavaConverters.asScalaBufferConverter
 
@@ -112,6 +113,13 @@ class CourseClassRepo(uuid: String) {
     AssetService.copyAssets(courseClass.getInstitutionUUID, CourseDetailsEntityType.COURSE_CLASS, sourceCourseClassUUID, targetCourseClassUUID, courseClass.getThumbUrl)
 
     courseClass
+  }
+
+  def updateRequiredScore(courseClass: CourseClass, wizardRequiredScore: BigDecimal) = {
+    if(courseClass.getRequiredScore != wizardRequiredScore) {
+      courseClass.setRequiredScore(wizardRequiredScore)
+      update(courseClass)
+    }
   }
 }
 
