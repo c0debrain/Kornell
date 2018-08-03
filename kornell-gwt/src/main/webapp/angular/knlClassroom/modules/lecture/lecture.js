@@ -3,164 +3,174 @@
 var app = angular.module('knlClassroom');
 
 app.controller('LectureController', [
-	'$scope',
-	'$rootScope',
-  '$timeout',
-  '$interval',
-	'$location',
-	'knlUtils',
-	function($scope, $rootScope, $timeout, $interval, $location, knlUtils) {
+    '$scope',
+    '$rootScope',
+    '$timeout',
+    '$interval',
+    '$location',
+    'knlUtils',
+    function($scope, $rootScope, $timeout, $interval, $location, knlUtils) {
 
-    var classroomInfo = JSON.parse(decodeURI(Base64.decode(window.isPreview ? localStorage.KNLwp : $location.$$search.classroomInfo)));
+        var classroomInfo = JSON.parse(decodeURI(Base64.decode(window.isPreview ? localStorage.KNLwp : $location.$$search.classroomInfo)));
 
-    classroomInfo.lectures = [];
-    angular.forEach(classroomInfo.modules, function(module){
-        angular.forEach(module.lectures, function(lecture){
-            classroomInfo.lectures.push(lecture);
+        classroomInfo.lectures = [];
+        angular.forEach(classroomInfo.modules, function(module){
+            angular.forEach(module.lectures, function(lecture){
+                classroomInfo.lectures.push(lecture);
+            });
         });
-    });
 
-    $rootScope.classroomInfo = classroomInfo;
+        $rootScope.classroomInfo = classroomInfo;
 
-    $scope.getNodeByUUID = function(uuid){
-      var found;
-      if($rootScope.classroomInfo.uuid === uuid) found = $rootScope.classroomInfo;
-      angular.forEach($rootScope.classroomInfo.modules, function(module){
-        if(module.uuid === uuid) found = module;
-        angular.forEach(module.lectures, function(lecture){
-          if(lecture.uuid === uuid) found = lecture;      
-        });
-      });
-      return found;
-    };
+        $scope.getNodeByUUID = function(uuid){
+            var found;
+            if($rootScope.classroomInfo.uuid === uuid) found = $rootScope.classroomInfo;
+            angular.forEach($rootScope.classroomInfo.modules, function(module){
+                if(module.uuid === uuid) found = module;
+                angular.forEach(module.lectures, function(lecture){
+                    if(lecture.uuid === uuid) found = lecture;
+                });
+            });
+            return found;
+        };
 
-    $scope.getFileURL = function(modelAttribute){
-      var id = $scope.lectureUUID + '_' + modelAttribute;
-      if(classroomInfo.files[id]){
-        var type = classroomInfo.files[id].type || 'hosted',
-            url = classroomInfo.files[id][type+"URL"];
-        if(type == 'uploaded'){
-          url = classroomInfo.files._baseURL + url;
-          if(location.hostname === 'localhost'){
-            url = 'http://localhost:8888' + url;
-          }
-        }
-        return url;
-      }
-    };
+        $scope.isLastLecture = function(){
+            var lastLecture = false;
+            angular.forEach($rootScope.classroomInfo.modules, function(module){
+                angular.forEach(module.lectures, function(lecture){
+                    lastLecture = (lecture.uuid === $scope.lectureUUID);
+                });
+            });
+            return lastLecture;
+        };
 
-    $scope.verifyNexPrevAvailability = function(){
-      var shouldBlockAdvance = function(){
-        return $scope.lecture.blockAdvanceDate && ($scope.lecture.blockAdvanceDate >= moment.now().valueOf());
-      };
+        $scope.getFileURL = function(modelAttribute){
+            var id = $scope.lectureUUID + '_' + modelAttribute;
+            if(classroomInfo.files[id]){
+                var type = classroomInfo.files[id].type || 'hosted',
+                    url = classroomInfo.files[id][type+"URL"];
+                if(type == 'uploaded'){
+                    url = classroomInfo.files._baseURL + url;
+                    if(location.hostname === 'localhost'){
+                        url = 'http://localhost:8888' + url;
+                    }
+                }
+                return url;
+            }
+        };
 
-      if(shouldBlockAdvance()){
-        knlUtils.enableNext(false);
-        var interval = $interval(function(){
-          if(shouldBlockAdvance()){
-            knlUtils.enableNext(false);
-          } else {
-            knlUtils.enableNext(true);
-            $interval.cancel(interval);
-          }
-        },3000);
-      } else if(knlUtils.getFinalExamJson().isApproved){
-        knlUtils.enableNext(true);
-        knlUtils.enablePrev(true);
-      }
-    };
-
-		$scope.initLecture = function(){
-			if(!$scope.classroomInfo) return;
-
-			$scope.lectureUUID = $location.$$search.uuid || 0;
-			$rootScope.lectureUUID = $scope.lectureUUID;
-
-			$scope.lecture = $scope.getNodeByUUID($scope.lectureUUID);
-      $scope.module = $scope.getNodeByUUID($scope.lecture.parentUUID);
-			$rootScope.lecture = $scope.lecture;
-
-      $scope.verifyNexPrevAvailability();
-
-			$rootScope.evaluateTimer(true);
-
-      if($scope.classroomInfo.colorBackground){
-        $scope.bgStyle = 'background-color: #'+$scope.classroomInfo.colorBackground+';';
-      }
-			if($scope.getFileURL('imageBackground')){
-        $scope.bgStyle += 'background-image: url('+$scope.getFileURL('imageBackground')+');';
-      } else if($scope.getFileURL('imageBackground')){
-        $scope.bgStyle += 'background-image: url('+$scope.getFileURL('imageBackground')+');';
-      }
-      $scope.bgStyle += "background-repeat: no-repeat;" + 
-        "background-attachment: fixed;" +
-        "background-position: center center;"
-
-      angular.forEach($scope.classroomInfo.modules, function(module){
-          angular.forEach(module.lectures, function(lecture){
-          	if($scope.lectureUUID == lecture.uuid){
-          		$scope.module = module;
-          	}
-          });
-      });
-
-      $rootScope.studentName = knlUtils.doLMSGetValueSanitized("cmi.core.student_name")
-    };
-
-  	$scope.toggleStructureDebug = function(){
-	    $scope.isToggleStructureDebug = !$scope.isToggleStructureDebug;
-  	};
-
-  	$rootScope.evaluateTimer = function(isShow){
-  		if($scope.isShow != isShow){
-  			$scope.isShow = isShow;
-  		}
-  	};
-
-    var initializeHideShowControl = function(){
-      var hidden = "hidden";
-
-      // Standards:
-      if (hidden in document)
-        document.addEventListener("visibilitychange", onchange);
-      else if ((hidden = "mozHidden") in document)
-        document.addEventListener("mozvisibilitychange", onchange);
-      else if ((hidden = "webkitHidden") in document)
-        document.addEventListener("webkitvisibilitychange", onchange);
-      else if ((hidden = "msHidden") in document)
-        document.addEventListener("msvisibilitychange", onchange);
-      // IE 9 and lower:
-      else if ("onfocusin" in document) 
-        document.onfocusin = document.onfocusout = onchange;
-      // All others:
-      else
-        window.onpageshow = window.onpagehide
-        = window.onfocus = window.onblur = onchange;
-
-      function onchange (evt) {
-        var v = "visible", h = "hidden", isShow = true,
-            evtMap = {
-              focus:v, focusin:v, pageshow:v, blur:h, focusout:h, pagehide:h
+        $scope.verifyNexPrevAvailability = function(){
+            var shouldBlockAdvance = function(){
+                return $scope.lecture.blockAdvanceDate && ($scope.lecture.blockAdvanceDate >= moment.now().valueOf());
             };
 
-        evt = evt || window.event;
-        
-        if (evt.type in evtMap){
-          isShow = evtMap[evt.type] == "visible";
-        } else {
-          isShow = !this[hidden];
-        }
+            if(shouldBlockAdvance()){
+                knlUtils.enableNext(false);
+                var interval = $interval(function(){
+                    if(shouldBlockAdvance()){
+                        knlUtils.enableNext(false);
+                    } else {
+                        knlUtils.enableNext(true);
+                        $interval.cancel(interval);
+                    }
+                },3000);
+            } else if(knlUtils.getFinalExamJson().isApproved){
+                knlUtils.enableNext(true);
+                knlUtils.enablePrev(true);
+            }
+        };
 
-        var scope = angular.element(document.getElementById('knlClassroomApp')).scope();
-        scope.evaluateTimer(isShow);
-      }
+        $scope.initLecture = function(){
+            if(!$scope.classroomInfo) return;
 
-      // set the initial state (but only if browser supports the Page Visibility API)
-      if( document[hidden] !== undefined )
-        onchange({type: document[hidden] ? "blur" : "focus"});
-    };
-    initializeHideShowControl();
+            $scope.lectureUUID = $location.$$search.uuid || 0;
+            $rootScope.lectureUUID = $scope.lectureUUID;
 
-  	$scope.initLecture();
-	}
+            $scope.lecture = $scope.getNodeByUUID($scope.lectureUUID);
+            $scope.module = $scope.getNodeByUUID($scope.lecture.parentUUID);
+            $rootScope.lecture = $scope.lecture;
+
+            $scope.verifyNexPrevAvailability();
+
+            $rootScope.evaluateTimer(true);
+
+            if($scope.classroomInfo.colorBackground){
+                $scope.bgStyle = 'background-color: #'+$scope.classroomInfo.colorBackground+';';
+            }
+            if($scope.getFileURL('imageBackground')){
+                $scope.bgStyle += 'background-image: url('+$scope.getFileURL('imageBackground')+');';
+            } else if($scope.getFileURL('imageBackground')){
+                $scope.bgStyle += 'background-image: url('+$scope.getFileURL('imageBackground')+');';
+            }
+            $scope.bgStyle += "background-repeat: no-repeat;" +
+                "background-attachment: fixed;" +
+                "background-position: center center;";
+
+            angular.forEach($scope.classroomInfo.modules, function(module){
+                angular.forEach(module.lectures, function(lecture){
+                    if($scope.lectureUUID == lecture.uuid){
+                        $scope.module = module;
+                    }
+                });
+            });
+
+            $rootScope.studentName = knlUtils.doLMSGetValueSanitized("cmi.core.student_name")
+        };
+
+        $scope.toggleStructureDebug = function(){
+            $scope.isToggleStructureDebug = !$scope.isToggleStructureDebug;
+        };
+
+        $rootScope.evaluateTimer = function(isShow){
+            if($scope.isShow != isShow){
+                $scope.isShow = isShow;
+            }
+        };
+
+        var initializeHideShowControl = function(){
+            var hidden = "hidden";
+
+            // Standards:
+            if (hidden in document)
+                document.addEventListener("visibilitychange", onchange);
+            else if ((hidden = "mozHidden") in document)
+                document.addEventListener("mozvisibilitychange", onchange);
+            else if ((hidden = "webkitHidden") in document)
+                document.addEventListener("webkitvisibilitychange", onchange);
+            else if ((hidden = "msHidden") in document)
+                document.addEventListener("msvisibilitychange", onchange);
+            // IE 9 and lower:
+            else if ("onfocusin" in document)
+                document.onfocusin = document.onfocusout = onchange;
+            // All others:
+            else
+                window.onpageshow = window.onpagehide
+                    = window.onfocus = window.onblur = onchange;
+
+            function onchange (evt) {
+                var v = "visible", h = "hidden", isShow = true,
+                    evtMap = {
+                        focus:v, focusin:v, pageshow:v, blur:h, focusout:h, pagehide:h
+                    };
+
+                evt = evt || window.event;
+
+                if (evt.type in evtMap){
+                    isShow = evtMap[evt.type] == "visible";
+                } else {
+                    isShow = !this[hidden];
+                }
+
+                var scope = angular.element(document.getElementById('knlClassroomApp')).scope();
+                scope.evaluateTimer(isShow);
+            }
+
+            // set the initial state (but only if browser supports the Page Visibility API)
+            if( document[hidden] !== undefined )
+                onchange({type: document[hidden] ? "blur" : "focus"});
+        };
+        initializeHideShowControl();
+
+        $scope.initLecture();
+    }
 ]);

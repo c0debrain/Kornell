@@ -39,7 +39,7 @@ app.controller('FinalExamLectureController', [
                 $scope.currentQuestion.time = $scope.currentQuestion.time + 
                     Math.round((newTime - $scope.questionTimer)/1000);
             }
-        }
+        };
         
         $scope.loadNext = function(){
             $scope.loadQuestion($scope.currentQuestionIndex+1);
