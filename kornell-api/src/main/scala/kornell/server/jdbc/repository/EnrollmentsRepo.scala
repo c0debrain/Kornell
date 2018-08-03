@@ -8,6 +8,7 @@ import kornell.core.entity._
 import kornell.core.error.exception.{EntityConflictException, ServerErrorException}
 import kornell.core.to._
 import kornell.core.util.UUID
+import kornell.server.api.getAuthenticatedPersonUUID
 import kornell.server.jdbc.PreparedStmt
 import kornell.server.jdbc.SQL._
 import kornell.server.repository.{Entities, TOs}
@@ -20,7 +21,7 @@ object EnrollmentsRepo {
   def byCourseClass(courseClassUUID: String): EnrollmentsTO =
     byCourseClassPaged(courseClassUUID, "", Int.MaxValue, 1, "e.state", false)
 
-  def byCourseClassPaged(courseClassUUID: String, searchTerm: String, pageSize: Int, pageNumber: Int, orderBy: String, asc: Boolean): EnrollmentsTO = {
+  def byCourseClassPaged(courseClassUUID: String, searchTerm: String, pageSize: Int, pageNumber: Int, orderBy: String, asc: Boolean, bindMode: String = null): EnrollmentsTO = {
     val resultOffset = (pageNumber.max(1) - 1) * pageSize
     val filteredSearchTerm = '%' + Option(searchTerm).getOrElse("") + '%'
     val orderColumn = if (orderBy != null && !orderBy.contains(";")) orderBy else "e.state"
@@ -66,6 +67,14 @@ object EnrollmentsRepo {
            ) as a
         """.first[String].get.toInt
     })
+
+    if("hasPowerOver" == bindMode) {
+      val personRepo = PersonRepo(getAuthenticatedPersonUUID)
+      enrollmentsTO.getEnrollmentTOs.asScala.foreach(enrollmentTO => {
+        enrollmentTO.setHasPowerOver(personRepo.hasPowerOver(enrollmentTO.getPersonUUID))
+        enrollmentsTO.isInstanceOf
+      })
+    }
     enrollmentsTO
   }
 

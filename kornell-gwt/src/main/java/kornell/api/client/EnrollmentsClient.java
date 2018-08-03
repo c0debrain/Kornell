@@ -9,13 +9,13 @@ import kornell.core.to.SimplePeopleTO;
 public class EnrollmentsClient extends RESTClient {
 
     public void getEnrollmentsByCourseClass(String courseClassUUID, Callback<EnrollmentsTO> cb) {
-        getEnrollmentsByCourseClass(courseClassUUID, "" + Integer.MAX_VALUE, "1", "", "e.state", "true", cb);
+        getEnrollmentsByCourseClass(courseClassUUID, "" + Integer.MAX_VALUE, "1", "", "e.state", "true", "", cb);
     }
 
     public void getEnrollmentsByCourseClass(String courseClassUUID, String ps, String pn, String searchTerm,
-            String orderBy, String isAscending, Callback<EnrollmentsTO> cb) {
+            String orderBy, String isAscending, String bindMode, Callback<EnrollmentsTO> cb) {
         GET("/enrollments/?courseClassUUID=" + courseClassUUID + "&ps=" + ps + "&pn=" + pn + "&searchTerm=" + searchTerm
-                + "&orderBy=" + orderBy + "&asc=" + isAscending).sendRequest(null, cb);
+                + "&orderBy=" + orderBy + "&asc=" + isAscending + "&bind=" + bindMode).sendRequest(null, cb);
     }
 
     public void createEnrollments(EnrollmentRequestsTO enrollmentRequests, Callback<Enrollments> cb) {

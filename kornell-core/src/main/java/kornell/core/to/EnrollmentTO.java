@@ -17,4 +17,7 @@ public interface EnrollmentTO {
     String getUsername();
     void setUsername(String username);
 
+    boolean getHasPowerOver();
+    void setHasPowerOver(boolean hasPowerOver);
+
 }

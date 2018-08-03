@@ -113,7 +113,7 @@ public class AdminCourseClassPresenter extends PaginationPresenterImpl<Enrollmen
         initializeProperties("e.state");
         bus.fireEvent(new ShowPacifierEvent(true));
         session.enrollments().getEnrollmentsByCourseClass(courseClassUUID, pageSize, pageNumber, searchTerm, orderBy,
-                asc, new Callback<EnrollmentsTO>() {
+                asc, "hasPowerOver", new Callback<EnrollmentsTO>() {
                     @Override
                     public void ok(EnrollmentsTO enrollments) {
                         bus.fireEvent(new ShowPacifierEvent(false));
@@ -230,7 +230,7 @@ public class AdminCourseClassPresenter extends PaginationPresenterImpl<Enrollmen
             return isEnabled && (EnrollmentState.cancelled.equals(state) || EnrollmentState.denied.equals(state))
                     && session.isCourseClassAdmin();
         } else if ("Perfil".equals(actionName)) {
-            return session.isCourseClassAdmin() || session.isCourseClassTutor();
+            return (session.isCourseClassAdmin() || session.isCourseClassTutor()) && enrollmentTO.getHasPowerOver();
         } else if ("Certificado".equals(actionName)) {
             return EnrollmentCategory.isFinished(enrollmentTO.getEnrollment()) && (session.isCourseClassAdmin()
                     || session.isCourseClassObserver() || session.isCourseClassTutor());

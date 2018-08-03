@@ -44,9 +44,10 @@ class EnrollmentsResource {
 
   @GET
   @Produces(Array(EnrollmentsTO.TYPE))
-  def getByCourseUUID(@QueryParam("courseClassUUID") courseClassUUID: String, @QueryParam("searchTerm") searchTerm: String,
-    @QueryParam("ps") pageSize: Int, @QueryParam("pn") pageNumber: Int, @QueryParam("orderBy") orderBy: String, @QueryParam("asc") asc: String): EnrollmentsTO = {
-    EnrollmentsRepo.byCourseClassPaged(courseClassUUID, searchTerm, pageSize, pageNumber, orderBy, asc == "true")
+  def getByCourseClassUUID(@QueryParam("courseClassUUID") courseClassUUID: String, @QueryParam("searchTerm") searchTerm: String,
+    @QueryParam("ps") pageSize: Int, @QueryParam("pn") pageNumber: Int, @QueryParam("orderBy") orderBy: String,
+                           @QueryParam("asc") asc: String, @QueryParam("bind") bindMode: String): EnrollmentsTO = {
+    EnrollmentsRepo.byCourseClassPaged(courseClassUUID, searchTerm, pageSize, pageNumber, orderBy, asc == "true", bindMode)
   }.requiring(isPlatformAdmin(CourseClassRepo(courseClassUUID).get.getInstitutionUUID), AccessDeniedErr())
     .or(isInstitutionAdmin(CourseClassRepo(courseClassUUID).get.getInstitutionUUID), AccessDeniedErr())
     .or(isCourseClassAdmin(courseClassUUID), AccessDeniedErr())
