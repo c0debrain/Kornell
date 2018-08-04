@@ -83,7 +83,6 @@ object WizardParser {
   }
 
   def getRequiredScore(courseVersion: CourseVersion, isSandbox: Boolean): BigDecimal = {
-    var expectedGrade = new BigDecimal(0)
     val jsonMap = getClassroomJsonMap(courseVersion, isSandbox)
     val topics: List[Any] = jsonMap("modules").asInstanceOf[List[Any]]
     topics foreach { topicObj =>
@@ -94,14 +93,14 @@ object WizardParser {
           {
             val slideObjMap = slideObj.asInstanceOf[Map[String, Any]]
             val slideType = slideObjMap("type").asInstanceOf[String]
-            if(slideType == "finalExam"){
+            if(slideType == "finalExam" && slideObjMap.contains(("expectedGrade"))){
               return new BigDecimal(slideObjMap("expectedGrade").asInstanceOf[Double])
             }
           }
         }
       }
     }
-    expectedGrade
+    new BigDecimal(0)
   }
 
 }

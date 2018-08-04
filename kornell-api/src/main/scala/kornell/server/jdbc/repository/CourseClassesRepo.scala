@@ -34,6 +34,12 @@ object CourseClassesRepo {
       if (courseClass.isSandbox == null) {
         courseClass.setSandbox(false)
       }
+      val course = CoursesRepo.byCourseVersionUUID(courseClass.getCourseVersionUUID).get
+      val isWizard = ContentSpec.WIZARD == course.getContentSpec
+      if(isWizard){
+        val courseVersion = CourseVersionRepo(courseClass.getCourseVersionUUID).get
+        courseClass.setRequiredScore(WizardParser.getRequiredScore(courseVersion, courseClass.isSandbox))
+      }
       val ecommerceIdentifier = UUID.random.replace("-", "").substring(0, 20)
       courseClass.setEcommerceIdentifier(ecommerceIdentifier)
       sql"""

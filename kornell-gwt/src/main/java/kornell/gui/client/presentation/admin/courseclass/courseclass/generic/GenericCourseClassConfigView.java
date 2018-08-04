@@ -68,7 +68,7 @@ public class GenericCourseClassConfigView extends Composite {
     private KornellSession session;
     private FormHelper formHelper = GWT.create(FormHelper.class);
     private boolean isCreationMode, isInstitutionAdmin, allowPrefixEdit, isWizardClass;
-    boolean isCurrentUser, showContactDetails, isRegisteredWithCPF;
+    List<CourseTO> loadedCourses;
 
     private Presenter presenter;
 
@@ -136,7 +136,7 @@ public class GenericCourseClassConfigView extends Composite {
         this.fields = new ArrayList<KornellFormFieldWrapper>();
         courseClass = isCreationMode ? entityFactory.newCourseClass().as() : courseClassTO.getCourseClass();
         Boolean isAllowCertification = (courseClass.getRequiredScore() != null || isCreationMode);
-        isWizardClass = ContentSpec.WIZARD == courseClassTO.getCourseVersionTO().getCourseTO().getCourse().getContentSpec();
+        isWizardClass = courseClassTO != null && ContentSpec.WIZARD == courseClassTO.getCourseVersionTO().getCourseTO().getCourse().getContentSpec();
 
         profileFields.clear();
 
@@ -150,6 +150,7 @@ public class GenericCourseClassConfigView extends Composite {
             session.courses().get(false, new Callback<CoursesTO>() {
                 @Override
                 public void ok(CoursesTO to) {
+                    loadedCourses = to.getCourses();
                     createCoursesField(to);
                 }
             });
@@ -417,6 +418,12 @@ public class GenericCourseClassConfigView extends Composite {
         courses.addChangeHandler(new ChangeHandler() {
             @Override
             public void onChange(ChangeEvent event) {
+                for(int i = 0; i < loadedCourses.size(); i++){
+                    if(loadedCourses.get(i).getCourse().getUUID().equals(courses.getSelectedValue())){
+                        isWizardClass = ContentSpec.WIZARD == loadedCourses.get(i).getCourse().getContentSpec();
+                        requiredScore.setVisible(!isWizardClass);
+                    }
+                }
                 loadCourseVersions();
             }
         });
@@ -491,16 +498,18 @@ public class GenericCourseClassConfigView extends Composite {
             name.setError("Insira o nome da turma.");
         }
 
-        if (requiredScore.getFieldPersistText().length() > 0) {
-            if (formHelper.isValidNumber(requiredScore.getFieldPersistText())) {
-                if (Double.parseDouble(requiredScore.getFieldPersistText()) > 100) {
-                    requiredScore.setError("A nota deve ser de 0 a 100.");
+        if(!isWizardClass) {
+            if (requiredScore.getFieldPersistText().length() > 0) {
+                if (formHelper.isValidNumber(requiredScore.getFieldPersistText())) {
+                    if (Double.parseDouble(requiredScore.getFieldPersistText()) > 100) {
+                        requiredScore.setError("A nota deve ser de 0 a 100.");
+                    }
+                } else {
+                    requiredScore.setError("Número inválido.");
                 }
-            } else {
-                requiredScore.setError("Número inválido.");
+            } else if (allowCertification.getFieldPersistText() == "true") {
+                requiredScore.setError("Insira a nota ou desabilite os certificados abaixo.");
             }
-        } else if (allowCertification.getFieldPersistText() == "true") {
-            requiredScore.setError("Insira a nota ou desabilite os certificados abaixo.");
         }
 
         if (!formHelper.isLengthValid(maxEnrollments.getFieldPersistText(), 1, 10)) {
@@ -546,8 +555,11 @@ public class GenericCourseClassConfigView extends Composite {
         courseClass.setApproveEnrollmentsAutomatically(
                 approveEnrollmentsAutomatically.getFieldPersistText().equals("true"));
         courseClass.setMaxEnrollments(new Integer(maxEnrollments.getFieldPersistText()));
-        courseClass.setRequiredScore(requiredScore.getFieldPersistText().length() > 0
-                ? new BigDecimal(requiredScore.getFieldPersistText()) : null);
+
+        if(!isWizardClass) {
+            courseClass.setRequiredScore(requiredScore.getFieldPersistText().length() > 0
+                    ? new BigDecimal(requiredScore.getFieldPersistText()) : null);
+        }
         courseClass.setOverrideEnrollments(overrideEnrollments.getFieldPersistText().equals("true"));
         courseClass.setInvisible(invisible.getFieldPersistText().equals("true"));
         courseClass.setAllowBatchCancellation(
