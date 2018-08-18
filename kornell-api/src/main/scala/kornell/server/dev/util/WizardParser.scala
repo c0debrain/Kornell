@@ -39,7 +39,11 @@ object WizardParser {
     } else {
       ""
     }
-    JSON.parseFull(jsonString).get.asInstanceOf[Map[String, Any]]
+    val jsonParsed = JSON.parseFull(jsonString)
+    if(jsonParsed.isDefined)
+      jsonParsed.asInstanceOf[Map[String, Any]]
+    else
+      null
   }
 
   def findVisitedContent(courseClass: CourseClass, visited: List[String]): Contents = {
@@ -48,15 +52,16 @@ object WizardParser {
     var topic: Topic = null
     var index = 1 //should start with 1, in case of the ordering fallback
 
-    val topics: List[Any] = jsonMap("modules").asInstanceOf[List[Any]]
-    topics foreach { topicObj =>
-      {
-        val topicObjMap = topicObj.asInstanceOf[Map[String, Any]]
-        topic = LOM.newTopic(topicObjMap("title").asInstanceOf[String])
-        result += LOM.newContent(topic)
+    if(jsonMap != null){
+      val topics: List[Any] = jsonMap("modules").asInstanceOf[List[Any]]
+      topics foreach { topicObj =>
+        {
+          val topicObjMap = topicObj.asInstanceOf[Map[String, Any]]
+          topic = LOM.newTopic(topicObjMap("title").asInstanceOf[String])
+          result += LOM.newContent(topic)
 
-        val slides: List[Any] = topicObjMap("lectures").asInstanceOf[List[Any]]
-        slides foreach { slideObj =>
+          val slides: List[Any] = topicObjMap("lectures").asInstanceOf[List[Any]]
+          slides foreach { slideObj =>
           {
             val slideObjMap = slideObj.asInstanceOf[Map[String, Any]]
 
@@ -75,6 +80,7 @@ object WizardParser {
               result += content
             index += 1
           }
+          }
         }
       }
     }
@@ -84,18 +90,20 @@ object WizardParser {
 
   def getRequiredScore(courseVersion: CourseVersion, isSandbox: Boolean): BigDecimal = {
     val jsonMap = getClassroomJsonMap(courseVersion, isSandbox)
-    val topics: List[Any] = jsonMap("modules").asInstanceOf[List[Any]]
-    topics foreach { topicObj =>
-      {
-        val topicObjMap = topicObj.asInstanceOf[Map[String, Any]]
-        val slides: List[Any] = topicObjMap("lectures").asInstanceOf[List[Any]]
-        slides foreach { slideObj =>
+    if(jsonMap != null){
+      val topics: List[Any] = jsonMap("modules").asInstanceOf[List[Any]]
+      topics foreach { topicObj =>
+        {
+          val topicObjMap = topicObj.asInstanceOf[Map[String, Any]]
+          val slides: List[Any] = topicObjMap("lectures").asInstanceOf[List[Any]]
+          slides foreach { slideObj =>
           {
             val slideObjMap = slideObj.asInstanceOf[Map[String, Any]]
             val slideType = slideObjMap("type").asInstanceOf[String]
             if(slideType == "finalExam" && slideObjMap.contains(("expectedGrade"))){
               return new BigDecimal(slideObjMap("expectedGrade").asInstanceOf[Double])
             }
+          }
           }
         }
       }
