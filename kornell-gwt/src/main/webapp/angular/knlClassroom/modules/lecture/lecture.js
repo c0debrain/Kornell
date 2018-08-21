@@ -98,10 +98,10 @@ app.controller('LectureController', [
             if($scope.classroomInfo.colorBackground){
                 $scope.bgStyle = 'background-color: #'+$scope.classroomInfo.colorBackground+';';
             }
-            if($scope.getFileURL('imageBackground', true)){
-                $scope.bgStyle += 'background-image: url('+$scope.getFileURL('imageBackground', true)+');';
-            } else if($scope.getFileURL('imageBackground')){
+            if($scope.getFileURL('imageBackground')){
                 $scope.bgStyle += 'background-image: url('+$scope.getFileURL('imageBackground')+');';
+            } else if($scope.getFileURL('imageBackground', true)){
+                $scope.bgStyle += 'background-image: url('+$scope.getFileURL('imageBackground', true)+');';
             }
             $scope.bgStyle += "background-repeat: no-repeat;" +
                 "background-attachment: fixed;" +
