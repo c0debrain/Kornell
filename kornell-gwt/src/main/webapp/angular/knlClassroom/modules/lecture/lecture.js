@@ -44,8 +44,9 @@ app.controller('LectureController', [
             return lastLecture;
         };
 
-        $scope.getFileURL = function(modelAttribute){
-            var id = $scope.lectureUUID + '_' + modelAttribute;
+        $scope.getFileURL = function(modelAttribute, isRoot){
+            var lectureUUID = isRoot ? classroomInfo.uuid : $scope.lectureUUID;
+            var id = lectureUUID + '_' + modelAttribute;
             if(classroomInfo.files[id]){
                 var type = classroomInfo.files[id].type || 'hosted',
                     url = classroomInfo.files[id][type+"URL"];
@@ -99,8 +100,8 @@ app.controller('LectureController', [
             }
             if($scope.getFileURL('imageBackground')){
                 $scope.bgStyle += 'background-image: url('+$scope.getFileURL('imageBackground')+');';
-            } else if($scope.getFileURL('imageBackground')){
-                $scope.bgStyle += 'background-image: url('+$scope.getFileURL('imageBackground')+');';
+            } else if($scope.getFileURL('imageBackground', true)){
+                $scope.bgStyle += 'background-image: url('+$scope.getFileURL('imageBackground', true)+');';
             }
             $scope.bgStyle += "background-repeat: no-repeat;" +
                 "background-attachment: fixed;" +

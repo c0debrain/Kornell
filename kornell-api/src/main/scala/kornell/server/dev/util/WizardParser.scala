@@ -33,15 +33,15 @@ object WizardParser {
     val classroomJson = courseVersion.getClassroomJson
     val classroomJsonPublished = courseVersion.getClassroomJsonPublished
     val jsonString = if (isSandbox && StringUtils.isSome(classroomJson)) {
-      classroomJson
+      Option(classroomJson)
     } else if (StringUtils.isSome(classroomJsonPublished)) {
-      classroomJsonPublished
+      Option(classroomJsonPublished)
     } else {
-      ""
+      None
     }
-    val jsonParsed = JSON.parseFull(jsonString)
+    val jsonParsed = if (jsonString.isDefined) JSON.parseFull(jsonString.get) else None
     if(jsonParsed.isDefined)
-      jsonParsed.asInstanceOf[Map[String, Any]]
+      jsonParsed.get.asInstanceOf[Map[String, Any]]
     else
       null
   }
