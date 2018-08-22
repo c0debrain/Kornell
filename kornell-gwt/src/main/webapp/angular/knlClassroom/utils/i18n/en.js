@@ -15,6 +15,8 @@ var translations_en = {
 	EXAM_MINIMUM_SCORE_PRE: 'To be approved you need ',
 	EXAM_MINIMUM_SCORE_POST: 'points.',
 	EXAM_CAN_BE_DONE_AGAIN: 'In case you\'re not approve you can redo the exam.',
+    TIME_LIMIT_PRE: 'You\'ll have ',
+	TIME_LIMIT_POST: 'minutes to finish the exam.',
 	NECESSARY_TO_REDO_EXAM: 'You need to do the exam again.',
 	APPROVED_ON_EXAM: 'You were approved in this exam. You can redo it if you wish, but your grade will stay the same.',
 	CURRENT_SCORE: 'Current score',

@@ -608,6 +608,14 @@ app.controller('WizardController', [
       },1000);
     };
 
+    $scope.timeLimitChanged = function() {
+      $timeout(function(){
+        if(!$scope.selectedNode.timeLimit || $scope.selectedNode.timeLimit <= 0) {
+          delete $scope.selectedNode.timeLimit;
+        }
+      },1000);
+    };
+
     $scope.limitQuestionsChanged = function() {
       $timeout(function(){
         if(!$scope.selectedNode.shuffleQuestions){

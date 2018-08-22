@@ -4,8 +4,9 @@ var app = angular.module('knlClassroom');
 
 app.controller('FinalExamLectureController', [
     '$scope',
+    '$interval',
     'knlUtils',
-    function($scope, knlUtils) {
+    function($scope, $interval, knlUtils) {
 
         $scope.knlUtils = knlUtils;
         $scope.lecture.originalQuestions = angular.copy($scope.lecture.questions);
@@ -23,7 +24,7 @@ app.controller('FinalExamLectureController', [
             if($scope.lecture.shuffleQuestions){
                 $scope.shuffleQuestions();
             }
-        };      
+        };
 
         $scope.loadQuestion = function(currentQuestionIndex) {
             if(currentQuestionIndex && !$scope.hasAccessToQuestion(currentQuestionIndex)) return;
@@ -97,6 +98,9 @@ app.controller('FinalExamLectureController', [
             
             knlUtils.saveExamAttempt($scope.cmiScoreRaw, $scope.isApproved);
             $scope.showPanel = 'result';
+            if($scope.counterInterval){
+                $interval.cancel($scope.counterInterval);
+            }
         };
 
         $scope.isQuestionAnswered = function(question){
@@ -135,6 +139,11 @@ app.controller('FinalExamLectureController', [
         };
 
         $scope.startTest = function(){
+
+            if($scope.lecture.timeLimit){
+                $scope.initClock();
+            }
+
             $scope.showPanel = 'main';
             $scope.loadQuestion(0);
 
@@ -171,6 +180,20 @@ app.controller('FinalExamLectureController', [
                 var question = $scope.lecture.questions[i];
                 question.options = knlUtils.shuffleArray(question.options);
             }
+        };
+
+        $scope.initClock = function() {
+            $scope.counter = ($scope.lecture.timeLimit * 60) + 1;
+            var buildClock = function() {
+                if ($scope.counter > 0){
+                    $scope.counter--;
+                    $scope.formattedCounter = new Date(1970, 0, 1).setSeconds($scope.counter);
+                } else {
+                    $scope.finishTest();
+                }
+            };
+            buildClock();
+            $scope.counterInterval = $interval(buildClock, 1000);
         };
 
         $scope.init();

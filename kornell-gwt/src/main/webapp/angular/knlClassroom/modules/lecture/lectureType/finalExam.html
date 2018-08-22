@@ -55,6 +55,14 @@
 	.question-option {
 		color: #{{classroomInfo.colorFont}} !important;
 	}
+	.color-font {
+		color: #{{classroomInfo.colorFont}} !important;
+	}
+	.clock-icon-container {
+		font-size: 1.4em !important;
+		line-height: 1.6em;
+		margin-right: 6px;
+	}
 </style>
 <div class="innerDiv container" ng-controller="FinalExamLectureController">
 	<div id="intro" class="col-md-9" ng-show="!showPanel || showPanel == 'intro'">
@@ -73,6 +81,7 @@
 					<li ng-show="lecture.expectedGrade"><span translate>EXAM_TOTAL_SCORE_PRE</span> <span class="code">100</span> <span translate>EXAM_TOTAL_SCORE_POST</span></li>
 					<li ng-show="lecture.expectedGrade"><span translate>EXAM_MINIMUM_SCORE_PRE</span> <span class="code">{{lecture.expectedGrade}}</span> <span translate>EXAM_MINIMUM_SCORE_POST</span></li>
 		        	<li ng-show="lecture.expectedGrade" translate>EXAM_CAN_BE_DONE_AGAIN</li>
+		        	<li ng-show="!isApproved && lecture.timeLimit"><span translate>TIME_LIMIT_PRE</span> <span class="code">{{lecture.timeLimit}}</span> <span translate>TIME_LIMIT_POST</span></li>
 		        </ul>
 		        <p ng-show="lecture.expectedGrade && currentScore && !isApproved" class="margin-bottom-30" translate>NECESSARY_TO_REDO_EXAM</p>
 		        <p ng-show="currentScore && isApproved"><br><span translate>APPROVED_ON_EXAM</span></p>
@@ -84,6 +93,13 @@
 		</div>
 	</div>
 	<div id="main" ng-show="showPanel == 'main'">
+		<div>
+			<h3 class="left color-font question-count-header">{{currentQuestionIndex}}/{{lecture.questions.length}}</h3>
+			<div class="right color-font" ng-show="formattedCounter">
+				<h3 class="clock-icon-container left"><icon class="fa fa-clock-o"></icon></h3>
+				<h3 class="left">{{formattedCounter | date:'mm:ss'}}</h3>
+			</div>
+		</div>
 		<div class="row">
 			<div class="text-center">
 				<ul class="pagination pagination-sm">
