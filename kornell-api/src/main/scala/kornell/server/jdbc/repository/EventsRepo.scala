@@ -31,9 +31,7 @@ object EventsRepo {
        ${event.getActomKey})
   """.executeUpdate
 
-    EnrollmentSEP.onProgress(event.getEnrollmentUUID)
-    EnrollmentSEP.onAssessment(event.getEnrollmentUUID)
-
+    EnrollmentRepo(event.getEnrollmentUUID).updateProgressAndAssessment()
   }
 
   def logAttendanceSheetSigned(event: AttendanceSheetSigned): Unit = {
