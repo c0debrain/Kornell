@@ -49,6 +49,55 @@ class EnrollmentRepo(uuid: String) {
     e
   }
 
+  // to prevent that deadlock
+  def updateProgressAndAssessment(): Unit = for {
+    e <- first
+    cc <- CourseClassesRepo(e.getCourseClassUUID).first
+    cv <- CourseVersionRepo(cc.getCourseVersionUUID).first
+    c <- CourseRepo(cv.getCourseUUID).first
+  } c.getContentSpec match {
+    case KNL => updateKNLProgress(e, false, true)
+    case WIZARD => updateKNLProgress(e, true, true)
+    case SCORM12 => updateSCORM12Progress(e, true)
+  }
+
+  def setEnrollmentProgressAndAssessment(e: Enrollment, newProgress: Int): Unit = {
+    val currentProgress = e.getProgress
+    val isProgress = currentProgress == null || newProgress > currentProgress
+    val isProgressValid = newProgress >= 0 && newProgress <= 100
+    val notPassed = !Assessment.PASSED.equals(e.getAssessment)
+    if (isProgress) {
+      if (isProgressValid) {
+        e.setProgress(newProgress)
+      } else {
+        logger.warning(s"Invalid progress [${currentProgress} to ${newProgress}] on enrollment [${e.getUUID}]")
+      }
+    }
+
+    if (notPassed && e.getCourseClassUUID != null) {
+      val (maxScore, assessment) = assess(e)
+      e.setAssessmentScore(maxScore)
+      e.setAssessment(assessment)
+    }
+
+    val isPassed = Assessment.PASSED == e.getAssessment
+    val isCompleted = e.getProgress == 100
+    val isUncertified = e.getCertifiedAt == null
+    if (isPassed && isCompleted && isUncertified) {
+      e.setCertifiedAt(DateTime.now.toDate)
+    }
+
+    if ((isProgress && isProgressValid)
+      || (notPassed && e.getCourseClassUUID != null)
+      || (isPassed && isCompleted && isUncertified)) {
+      update(e)
+    }
+
+    if (isPassed && isCompleted && isUncertified) {
+      EmailService.sendEmailClassCompletion(e)
+    }
+  }
+
   //TODO: Convert to map/flatmat and dedup updateAssessment
   def updateProgress(): Unit = for {
     e <- first
@@ -61,13 +110,17 @@ class EnrollmentRepo(uuid: String) {
     case SCORM12 => updateSCORM12Progress(e)
   }
 
-  def updateKNLProgress(e: Enrollment, isWizard: Boolean): Unit = {
+  def updateKNLProgress(e: Enrollment, isWizard: Boolean, setAssessment: Boolean = false): Unit = {
     val contents = ContentRepository.findKNLVisitedContent(e, PersonRepo(e.getPersonUUID).get, isWizard)
     val actoms = ContentsOps.collectActoms(contents).asScala
     val visited = actoms.count(_.isVisited)
     val newProgress = visited / actoms.size.toDouble
     val newProgressPerc = math.max((newProgress * 100).floor.toInt, 1)
-    setEnrollmentProgress(e, newProgressPerc)
+    if (setAssessment) {
+      setEnrollmentProgressAndAssessment(e, newProgressPerc)
+    } else {
+      setEnrollmentProgress(e, newProgressPerc)
+    }
   }
 
   def findProgressMilestone(e: Enrollment, actomKey: String): Option[Int] = {
@@ -126,12 +179,12 @@ class EnrollmentRepo(uuid: String) {
     progress
   }
 
-  def updateSCORM12Progress(e: Enrollment): Unit =
+  def updateSCORM12Progress(e: Enrollment, setAssessment: Boolean = false): Unit =
     progressFromSuspendData(e)
       .orElse(progressFromMilestones(e))
       .orElse(progressFromLessonStatus(e))
       .orElse(Some(1))
-      .foreach { p => setEnrollmentProgress(e, p) }
+      .foreach { p => if (setAssessment) setEnrollmentProgressAndAssessment(e, p) else setEnrollmentProgress(e, p) }
 
   def setEnrollmentProgress(e: Enrollment, newProgress: Int): Unit = {
     val currentProgress = e.getProgress
