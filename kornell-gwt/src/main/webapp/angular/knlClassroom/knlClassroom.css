@@ -27,7 +27,7 @@
     margin-right: auto;
     max-width: calc((100vh - 30px) * (16 / 9));
     margin-bottom: 10px;
-    margin-top: 10px;
+    margin-top: 20px;
 }
 
 .videoInnerDiv {
@@ -41,7 +41,7 @@
     position: absolute;
     padding: 5px;
     margin-bottom: 10px;
-    height: 28px;
+    min-height: 28px;
     line-height: 16px;
     width: 100%;
     top: 0;
@@ -191,6 +191,10 @@
     border-radius: 3px;
 }
 
+.question-count-header {
+    display: none;
+}
+
 .code {
     padding: 2px 5px;
     font-family: Menlo,Monaco,Consolas,"Courier New",monospace;
@@ -282,6 +286,9 @@
     }
     .pagination {
         display: none;
+    }
+    .question-count-header {
+        display: block;
     }
 }
 
