@@ -68,7 +68,7 @@ object SandboxService {
   def enrollAdmins(sandboxClassUUID: String, institutionUUID: String): Unit = {
     val rolesTO = new RolesRepo().getAllUsersWithRoleForInstitution(institutionUUID, RoleCategory.BIND_DEFAULT)
     for (roleTO <- rolesTO.getRoleTOs.asScala) {
-      val enrollment = EnrollmentsRepo.byCourseClassAndPerson(sandboxClassUUID, roleTO.getRole.getPersonUUID, getDeleted = false)
+      val enrollment = EnrollmentsRepo.byCourseClassAndPerson(sandboxClassUUID, roleTO.getRole.getPersonUUID, getDeleted = true)
       if (enrollment.isEmpty) {
         enrollAdmin(sandboxClassUUID, roleTO.getRole.getPersonUUID)
       } else if (!EnrollmentState.enrolled.equals(enrollment.get.getState)) {
