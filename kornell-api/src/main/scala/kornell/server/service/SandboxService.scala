@@ -10,7 +10,7 @@ import kornell.core.to.RolesTO
 import kornell.core.util.UUID
 import kornell.server.authentication.ThreadLocalAuthenticator
 import kornell.server.jdbc.SQL._
-import kornell.server.jdbc.repository.{CourseClassesRepo, CourseRepo, CourseVersionRepo, CourseVersionsRepo, EnrollmentRepo, EnrollmentsRepo, EventsRepo, InstitutionRepo, PersonRepo, RolesRepo}
+import kornell.server.jdbc.repository.{CourseClassRepo, CourseClassesRepo, CourseRepo, CourseVersionRepo, CourseVersionsRepo, EnrollmentRepo, EnrollmentsRepo, EventsRepo, InstitutionRepo, PersonRepo, RolesRepo}
 import kornell.server.repository.Entities
 
 import scala.collection.JavaConverters._
@@ -58,9 +58,11 @@ object SandboxService {
   }
 
   def manageExistingEnrollment(sandboxClassUUID: String, personUUID: String, state: EnrollmentState): Unit = {
-    val enrollment = EnrollmentsRepo.byCourseClassAndPerson(sandboxClassUUID, personUUID, getDeleted = false).get
-    EventsRepo.logEnrollmentStateChanged(UUID.random, ThreadLocalAuthenticator.getAuthenticatedPersonUUID.get, enrollment.getUUID, EnrollmentState.enrolled, state, sendEmail = false, "Sandbox class enrollment: " + state.toString)
-    EventsRepo.deleteActoms(enrollment.getUUID)
+    val enrollment = EnrollmentsRepo.byCourseClassAndPerson(sandboxClassUUID, personUUID, getDeleted = false)
+    if(enrollment.isDefined) {
+      EventsRepo.logEnrollmentStateChanged(UUID.random, ThreadLocalAuthenticator.getAuthenticatedPersonUUID.get, enrollment.get.getUUID, EnrollmentState.enrolled, state, sendEmail = false, "Sandbox class enrollment: " + state.toString)
+      EventsRepo.deleteActoms(enrollment.get.getUUID)
+    }
   }
 
   def enrollAdmins(sandboxClassUUID: String, institutionUUID: String): Unit = {
@@ -78,14 +80,19 @@ object SandboxService {
   }
 
   def enrollAdmin(sandboxClassUUID: String, personUUID: String): Enrollment = {
-    val enrollment = EnrollmentsRepo.create(
-      courseClassUUID = sandboxClassUUID,
-      personUUID = personUUID,
-      enrollmentState = EnrollmentState.enrolled,
-      courseVersionUUID = null,
-      parentEnrollmentUUID = null,
-      enrollmentSource = EnrollmentSource.WEBSITE)
-    enrollment
+    val existingEnrollment = EnrollmentsRepo.byCourseClassAndPerson(sandboxClassUUID, personUUID, false)
+    if(!existingEnrollment.isDefined){
+      val enrollment = EnrollmentsRepo.create(
+        courseClassUUID = sandboxClassUUID,
+        personUUID = personUUID,
+        enrollmentState = EnrollmentState.enrolled,
+        courseVersionUUID = null,
+        parentEnrollmentUUID = null,
+        enrollmentSource = EnrollmentSource.WEBSITE)
+      enrollment
+    } else {
+      existingEnrollment.get
+    }
   }
 
   /**

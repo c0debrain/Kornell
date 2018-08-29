@@ -81,13 +81,10 @@ class RolesRepo {
     TOs.newRolesTO(sql"""
       | select r.*, pw.username, cc.name as courseClassName
       | from (select * from Role
-      | where (courseClassUUID = ${courseClassUUID}
-      |   and role = ${RoleType.courseClassAdmin.toString})
-      | or (institutionUUID = ${institutionUUID}
-      |   and role = ${RoleType.institutionAdmin.toString})
-      | or (institutionUUID = ${institutionUUID}
-      |   and role = ${RoleType.platformAdmin.toString})
-      |    order by case `role`
+      | where (courseClassUUID = ${courseClassUUID} and role = ${RoleType.courseClassAdmin.toString})
+      |   or (institutionUUID = ${institutionUUID} and role = ${RoleType.institutionAdmin.toString})
+      |   or (institutionUUID = ${institutionUUID} and role = ${RoleType.platformAdmin.toString})
+      | order by case `role`
       |  when 'platformAdmin' then 1
       |  when 'institutionAdmin' then 2
       |  when 'courseClassAdmin' then 3
@@ -109,7 +106,6 @@ class RolesRepo {
       |   and r.role = ${RoleType.institutionAdmin.toString})
       | or (r.institutionUUID = ${institutionUUID}
       |   and r.role = ${RoleType.platformAdmin.toString})
-      | group by pw.username
     """.map[RoleTO](toRoleTO(_, bindMode)))
 
   def getAllUsersWithRoleForInstitution(institutionUUID: String, bindMode: String): RolesTO =
