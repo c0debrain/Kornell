@@ -4,8 +4,6 @@ import java.util.logging.Logger
 
 import javax.servlet._
 import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
-import kornell.core.entity.Institution
-import kornell.server.jdbc.repository.InstitutionsRepo
 import kornell.server.util.DateConverter
 
 class InstitutionHostnameFilter extends Filter {
@@ -26,7 +24,7 @@ class InstitutionHostnameFilter extends Filter {
 
   def doFilter(req: HttpServletRequest, resp: HttpServletResponse, chain: FilterChain): Unit = {
     //    debugLogRequest(req)
-    val institution = getInstitution(req)
+    val institution = FilterUtils.getInstitution(req, DOMAIN_HEADER)
 
     if (institution.isDefined) {
       DateConverter.setTimeZone(institution.get.getTimeZone)
@@ -52,29 +50,6 @@ class InstitutionHostnameFilter extends Filter {
     while (headers.hasMoreElements) {
       val header = headers.nextElement
       logger.info(header + ": " + request.getHeader(header))
-    }
-  }
-
-  def getInstitution(req: HttpServletRequest): Option[Institution] = {
-    if (req.getHeader(DOMAIN_HEADER) != null) {
-      InstitutionsRepo.getByHostName(req.getHeader(DOMAIN_HEADER))
-    } else if (req.getHeader("Referer") != null) {
-      getInstitutionFromHeader(req.getHeader("Referer"))
-    } else {
-      None
-    }
-  }
-
-  def getInstitutionFromHeader(header: String): Option[Institution] = {
-    val pattern = """institution=([a-z]+)$""".r
-    val institutionName = pattern findFirstIn header match {
-      case Some(pattern(c)) => Option(c)
-      case None => None
-    }
-    if (institutionName.isDefined) {
-      InstitutionsRepo.getByName(institutionName.get)
-    } else {
-      None
     }
   }
 

@@ -62,4 +62,7 @@ public interface Institution extends Named {
 
     String getAllowedLanguages();
     void setAllowedLanguages(String allowedLanguages);
+
+    boolean isDisabled();
+    void setDisabled(boolean disabled);
 }

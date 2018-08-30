@@ -15,15 +15,14 @@ import kornell.core.entity.EntityState;
 import kornell.core.to.CourseClassTO;
 import kornell.core.to.UserInfoTO;
 import kornell.gui.client.KornellConstants;
-import kornell.gui.client.event.LoginEvent;
-import kornell.gui.client.event.LoginEventHandler;
-import kornell.gui.client.event.LogoutEvent;
-import kornell.gui.client.event.LogoutEventHandler;
+import kornell.gui.client.event.*;
 import kornell.gui.client.presentation.classroom.ClassroomPlace;
 import kornell.gui.client.presentation.vitrine.VitrinePlace;
+import kornell.gui.client.util.ClientProperties;
+import kornell.gui.client.util.view.KornellMaintenance;
 import kornell.gui.client.util.view.KornellNotification;
 
-public class Captain implements LogoutEventHandler, LoginEventHandler {
+public class Captain implements LogoutEventHandler, LoginEventHandler, DisableInstitutionEventHandler {
     Logger logger = Logger.getLogger(Captain.class.getName());
     private PlaceController placeCtrl;
     private KornellSession session;
@@ -35,6 +34,7 @@ public class Captain implements LogoutEventHandler, LoginEventHandler {
         this.session = session;
         bus.addHandler(LogoutEvent.TYPE, this);
         bus.addHandler(LoginEvent.TYPE, this);
+        bus.addHandler(DisableInstitutionEvent.TYPE, this);
 
         bus.addHandler(PlaceChangeRequestEvent.TYPE, new PlaceChangeRequestEvent.Handler() {
             @Override
@@ -82,4 +82,12 @@ public class Captain implements LogoutEventHandler, LoginEventHandler {
         logger.info("User logged in as " + user.getUsername());
     }
 
+    @Override
+    public void onServiceUnavailable() {
+        ClientProperties.remove(ClientProperties.X_KNL_TOKEN);
+        this.session.setCurrentUser(null);
+        placeCtrl.goTo(VitrinePlace.instance);
+        Window.Location.reload();
+        KornellMaintenance.show();
+    }
 }
