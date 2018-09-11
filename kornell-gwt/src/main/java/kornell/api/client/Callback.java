@@ -28,6 +28,7 @@ import kornell.core.lom.LOMFactory;
 import kornell.core.to.TOFactory;
 import kornell.gui.client.GenericClientFactoryImpl;
 import kornell.gui.client.KornellConstantsHelper;
+import kornell.gui.client.event.DisableInstitutionEvent;
 import kornell.gui.client.event.LogoutEvent;
 
 @SuppressWarnings("unchecked")
@@ -147,6 +148,7 @@ public abstract class Callback<T> implements RequestCallback {
     }
 
     protected void serviceUnavailable() {
+        GenericClientFactoryImpl.EVENT_BUS.fireEvent(new DisableInstitutionEvent());
     }
 
     protected void badGateway() {

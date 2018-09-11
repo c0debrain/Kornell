@@ -46,7 +46,8 @@ package object repository {
       rs.getString("institutionSupportEmail"),
       rs.getBoolean("advancedMode"),
       rs.getBoolean("notifyInstitutionAdmins"),
-      rs.getString("allowedLanguages"))
+      rs.getString("allowedLanguages"),
+      rs.getBoolean("disabled"))
 
   implicit def toContentRepository(rs: ResultSet): ContentRepository =
     newContentRepository(rs.getString("uuid"),
